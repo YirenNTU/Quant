@@ -1,0 +1,1164 @@
+{
+  "open": {
+    "category": "price",
+    "source_column": "Open",
+    "description": "開盤價",
+    "shape": [
+      485,
+      4
+    ],
+    "date_range": [
+      "2024-02-15 00:00:00",
+      "2026-02-05 00:00:00"
+    ],
+    "tickers": 4
+  },
+  "high": {
+    "category": "price",
+    "source_column": "High",
+    "description": "最高價",
+    "shape": [
+      485,
+      4
+    ],
+    "date_range": [
+      "2024-02-15 00:00:00",
+      "2026-02-05 00:00:00"
+    ],
+    "tickers": 4
+  },
+  "low": {
+    "category": "price",
+    "source_column": "Low",
+    "description": "最低價",
+    "shape": [
+      485,
+      4
+    ],
+    "date_range": [
+      "2024-02-15 00:00:00",
+      "2026-02-05 00:00:00"
+    ],
+    "tickers": 4
+  },
+  "close": {
+    "category": "price",
+    "source_column": "Close",
+    "description": "收盤價",
+    "shape": [
+      485,
+      4
+    ],
+    "date_range": [
+      "2024-02-15 00:00:00",
+      "2026-02-05 00:00:00"
+    ],
+    "tickers": 4
+  },
+  "adjfac": {
+    "category": "price",
+    "source_column": "adjfac",
+    "description": "還原因子",
+    "shape": [
+      485,
+      4
+    ],
+    "date_range": [
+      "2024-02-15 00:00:00",
+      "2026-02-05 00:00:00"
+    ],
+    "tickers": 4
+  },
+  "volume": {
+    "category": "price",
+    "source_column": "Volume",
+    "description": "成交量(股)",
+    "shape": [
+      485,
+      4
+    ],
+    "date_range": [
+      "2024-02-15 00:00:00",
+      "2026-02-05 00:00:00"
+    ],
+    "tickers": 4
+  },
+  "amount": {
+    "category": "price",
+    "source_column": "amt",
+    "description": "成交金額",
+    "shape": [
+      485,
+      4
+    ],
+    "date_range": [
+      "2024-02-15 00:00:00",
+      "2026-02-05 00:00:00"
+    ],
+    "tickers": 4
+  },
+  "trades": {
+    "category": "price",
+    "source_column": "trn",
+    "description": "成交筆數",
+    "shape": [
+      485,
+      4
+    ],
+    "date_range": [
+      "2024-02-15 00:00:00",
+      "2026-02-05 00:00:00"
+    ],
+    "tickers": 4
+  },
+  "avgprc": {
+    "category": "price",
+    "source_column": "avgprc",
+    "description": "均價",
+    "shape": [
+      485,
+      4
+    ],
+    "date_range": [
+      "2024-02-15 00:00:00",
+      "2026-02-05 00:00:00"
+    ],
+    "tickers": 4
+  },
+  "turnover": {
+    "category": "price",
+    "source_column": "turnover",
+    "description": "週轉率%",
+    "shape": [
+      485,
+      4
+    ],
+    "date_range": [
+      "2024-02-15 00:00:00",
+      "2026-02-05 00:00:00"
+    ],
+    "tickers": 4
+  },
+  "mktcap": {
+    "category": "price",
+    "source_column": "mktcap",
+    "description": "市值",
+    "shape": [
+      485,
+      4
+    ],
+    "date_range": [
+      "2024-02-15 00:00:00",
+      "2026-02-05 00:00:00"
+    ],
+    "tickers": 4
+  },
+  "shares": {
+    "category": "price",
+    "source_column": "shares",
+    "description": "流通股數",
+    "shape": [
+      485,
+      4
+    ],
+    "date_range": [
+      "2024-02-15 00:00:00",
+      "2026-02-05 00:00:00"
+    ],
+    "tickers": 4
+  },
+  "pe": {
+    "category": "price",
+    "source_column": "per",
+    "description": "本益比",
+    "shape": [
+      485,
+      4
+    ],
+    "date_range": [
+      "2024-02-15 00:00:00",
+      "2026-02-05 00:00:00"
+    ],
+    "tickers": 4
+  },
+  "pb": {
+    "category": "price",
+    "source_column": "pbr",
+    "description": "股價淨值比",
+    "shape": [
+      485,
+      4
+    ],
+    "date_range": [
+      "2024-02-15 00:00:00",
+      "2026-02-05 00:00:00"
+    ],
+    "tickers": 4
+  },
+  "psr": {
+    "category": "price",
+    "source_column": "psr_tej",
+    "description": "股價營收比",
+    "shape": [
+      485,
+      4
+    ],
+    "date_range": [
+      "2024-02-15 00:00:00",
+      "2026-02-05 00:00:00"
+    ],
+    "tickers": 4
+  },
+  "pe_tej": {
+    "category": "price",
+    "source_column": "per_tej",
+    "description": "PE(TEJ)",
+    "shape": [
+      485,
+      4
+    ],
+    "date_range": [
+      "2024-02-15 00:00:00",
+      "2026-02-05 00:00:00"
+    ],
+    "tickers": 4
+  },
+  "pb_tej": {
+    "category": "price",
+    "source_column": "pbr_tej",
+    "description": "PB(TEJ)",
+    "shape": [
+      485,
+      4
+    ],
+    "date_range": [
+      "2024-02-15 00:00:00",
+      "2026-02-05 00:00:00"
+    ],
+    "tickers": 4
+  },
+  "div_yield": {
+    "category": "price",
+    "source_column": "div_yid",
+    "description": "殖利率%",
+    "shape": [
+      485,
+      4
+    ],
+    "date_range": [
+      "2024-02-15 00:00:00",
+      "2026-02-05 00:00:00"
+    ],
+    "tickers": 4
+  },
+  "cdiv_yield": {
+    "category": "price",
+    "source_column": "cdiv_yid",
+    "description": "現金殖利率%",
+    "shape": [
+      485,
+      4
+    ],
+    "date_range": [
+      "2024-02-15 00:00:00",
+      "2026-02-05 00:00:00"
+    ],
+    "tickers": 4
+  },
+  "daily_return": {
+    "category": "price",
+    "source_column": "roi",
+    "description": "日報酬率%",
+    "shape": [
+      485,
+      4
+    ],
+    "date_range": [
+      "2024-02-15 00:00:00",
+      "2026-02-05 00:00:00"
+    ],
+    "tickers": 4
+  },
+  "amplitude": {
+    "category": "price",
+    "source_column": "hmlpct",
+    "description": "振幅%",
+    "shape": [
+      485,
+      4
+    ],
+    "date_range": [
+      "2024-02-15 00:00:00",
+      "2026-02-05 00:00:00"
+    ],
+    "tickers": 4
+  },
+  "revenue": {
+    "category": "financials",
+    "source_column": "Total Revenue",
+    "description": "營業收入",
+    "shape": [
+      19,
+      4
+    ],
+    "date_range": [
+      "2021-03-01 00:00:00",
+      "2025-09-01 00:00:00"
+    ],
+    "tickers": 4
+  },
+  "gross_profit": {
+    "category": "financials",
+    "source_column": "Gross Profit",
+    "description": "毛利",
+    "shape": [
+      19,
+      4
+    ],
+    "date_range": [
+      "2021-03-01 00:00:00",
+      "2025-09-01 00:00:00"
+    ],
+    "tickers": 4
+  },
+  "net_income": {
+    "category": "financials",
+    "source_column": "Net Income",
+    "description": "稅後淨利",
+    "shape": [
+      19,
+      4
+    ],
+    "date_range": [
+      "2021-03-01 00:00:00",
+      "2025-09-01 00:00:00"
+    ],
+    "tickers": 4
+  },
+  "tej_gpm": {
+    "category": "financials",
+    "source_column": "TEJ_GPM",
+    "description": "毛利率%",
+    "shape": [
+      19,
+      4
+    ],
+    "date_range": [
+      "2021-03-01 00:00:00",
+      "2025-09-01 00:00:00"
+    ],
+    "tickers": 4
+  },
+  "tej_opm": {
+    "category": "financials",
+    "source_column": "TEJ_OPM",
+    "description": "營益率%",
+    "shape": [
+      19,
+      4
+    ],
+    "date_range": [
+      "2021-03-01 00:00:00",
+      "2025-09-01 00:00:00"
+    ],
+    "tickers": 4
+  },
+  "inventory_turnover": {
+    "category": "financials",
+    "source_column": "Inventory Turnover",
+    "description": "存貨週轉率",
+    "shape": [
+      19,
+      4
+    ],
+    "date_range": [
+      "2021-03-01 00:00:00",
+      "2025-09-01 00:00:00"
+    ],
+    "tickers": 4
+  },
+  "inventory_days": {
+    "category": "financials",
+    "source_column": "Inventory Days",
+    "description": "存貨天數",
+    "shape": [
+      19,
+      4
+    ],
+    "date_range": [
+      "2021-03-01 00:00:00",
+      "2025-09-01 00:00:00"
+    ],
+    "tickers": 4
+  },
+  "dso": {
+    "category": "financials",
+    "source_column": "Days Sales Outstanding",
+    "description": "應收帳款天數",
+    "shape": [
+      19,
+      4
+    ],
+    "date_range": [
+      "2021-03-01 00:00:00",
+      "2025-09-01 00:00:00"
+    ],
+    "tickers": 4
+  },
+  "days_payable": {
+    "category": "financials",
+    "source_column": "Days Payable",
+    "description": "應付帳款天數",
+    "shape": [
+      19,
+      4
+    ],
+    "date_range": [
+      "2021-03-01 00:00:00",
+      "2025-09-01 00:00:00"
+    ],
+    "tickers": 4
+  },
+  "total_assets": {
+    "category": "balance_sheet",
+    "source_column": "Total Assets",
+    "description": "資產總額",
+    "shape": [
+      19,
+      4
+    ],
+    "date_range": [
+      "2021-03-01 00:00:00",
+      "2025-09-01 00:00:00"
+    ],
+    "tickers": 4
+  },
+  "total_debt": {
+    "category": "balance_sheet",
+    "source_column": "Total Debt",
+    "description": "負債總額",
+    "shape": [
+      19,
+      4
+    ],
+    "date_range": [
+      "2021-03-01 00:00:00",
+      "2025-09-01 00:00:00"
+    ],
+    "tickers": 4
+  },
+  "total_liabilities": {
+    "category": "balance_sheet",
+    "source_column": "Total Liabilities Net Minority Interest",
+    "description": "總負債",
+    "shape": [
+      19,
+      4
+    ],
+    "date_range": [
+      "2021-03-01 00:00:00",
+      "2025-09-01 00:00:00"
+    ],
+    "tickers": 4
+  },
+  "current_assets": {
+    "category": "balance_sheet",
+    "source_column": "Current Assets",
+    "description": "流動資產",
+    "shape": [
+      19,
+      4
+    ],
+    "date_range": [
+      "2021-03-01 00:00:00",
+      "2025-09-01 00:00:00"
+    ],
+    "tickers": 4
+  },
+  "accounts_receivable": {
+    "category": "balance_sheet",
+    "source_column": "Accounts Receivable",
+    "description": "應收帳款",
+    "shape": [
+      19,
+      4
+    ],
+    "date_range": [
+      "2021-03-01 00:00:00",
+      "2025-09-01 00:00:00"
+    ],
+    "tickers": 4
+  },
+  "ocf": {
+    "category": "cashflow",
+    "source_column": "Operating Cash Flow",
+    "description": "營業現金流",
+    "shape": [
+      19,
+      4
+    ],
+    "date_range": [
+      "2021-03-01 00:00:00",
+      "2025-09-01 00:00:00"
+    ],
+    "tickers": 4
+  },
+  "qfii_net": {
+    "category": "chip",
+    "source_column": "qfii_ex",
+    "description": "外資買賣超(張)",
+    "shape": [
+      42,
+      2
+    ],
+    "date_range": [
+      "2025-12-08 00:00:00",
+      "2026-02-05 00:00:00"
+    ],
+    "tickers": 2
+  },
+  "fund_net": {
+    "category": "chip",
+    "source_column": "fund_ex",
+    "description": "投信買賣超(張)",
+    "shape": [
+      42,
+      2
+    ],
+    "date_range": [
+      "2025-12-08 00:00:00",
+      "2026-02-05 00:00:00"
+    ],
+    "tickers": 2
+  },
+  "dealer_net": {
+    "category": "chip",
+    "source_column": "tot_ex",
+    "description": "三大法人合計",
+    "shape": [
+      42,
+      2
+    ],
+    "date_range": [
+      "2025-12-08 00:00:00",
+      "2026-02-05 00:00:00"
+    ],
+    "tickers": 2
+  },
+  "qfii_pct": {
+    "category": "chip",
+    "source_column": "qfii_pct",
+    "description": "外資持股%",
+    "shape": [
+      42,
+      2
+    ],
+    "date_range": [
+      "2025-12-08 00:00:00",
+      "2026-02-05 00:00:00"
+    ],
+    "tickers": 2
+  },
+  "fund_pct": {
+    "category": "chip",
+    "source_column": "fd_pct",
+    "description": "投信持股%",
+    "shape": [
+      42,
+      2
+    ],
+    "date_range": [
+      "2025-12-08 00:00:00",
+      "2026-02-05 00:00:00"
+    ],
+    "tickers": 2
+  },
+  "dealer_pct": {
+    "category": "chip",
+    "source_column": "dlr_pct",
+    "description": "自營商持股%",
+    "shape": [
+      42,
+      2
+    ],
+    "date_range": [
+      "2025-12-08 00:00:00",
+      "2026-02-05 00:00:00"
+    ],
+    "tickers": 2
+  },
+  "margin_long": {
+    "category": "chip",
+    "source_column": "long_t",
+    "description": "融資餘額(張)",
+    "shape": [
+      42,
+      2
+    ],
+    "date_range": [
+      "2025-12-08 00:00:00",
+      "2026-02-05 00:00:00"
+    ],
+    "tickers": 2
+  },
+  "margin_short": {
+    "category": "chip",
+    "source_column": "short_t",
+    "description": "融券餘額(張)",
+    "shape": [
+      42,
+      2
+    ],
+    "date_range": [
+      "2025-12-08 00:00:00",
+      "2026-02-05 00:00:00"
+    ],
+    "tickers": 2
+  },
+  "short_ratio": {
+    "category": "chip",
+    "source_column": "s_l_pct",
+    "description": "券資比%",
+    "shape": [
+      42,
+      2
+    ],
+    "date_range": [
+      "2025-12-08 00:00:00",
+      "2026-02-05 00:00:00"
+    ],
+    "tickers": 2
+  },
+  "monthly_rev": {
+    "category": "monthly_sales",
+    "source_column": "d0001",
+    "description": "當月營收(千元)",
+    "shape": [
+      15,
+      2
+    ],
+    "date_range": [
+      "2024-11-01 00:00:00",
+      "2026-01-01 00:00:00"
+    ],
+    "tickers": 2
+  },
+  "monthly_rev_alt": {
+    "category": "monthly_sales",
+    "source_column": "d0002",
+    "description": "月營收(千元)",
+    "shape": [
+      15,
+      2
+    ],
+    "date_range": [
+      "2024-11-01 00:00:00",
+      "2026-01-01 00:00:00"
+    ],
+    "tickers": 2
+  },
+  "monthly_rev_yoy": {
+    "category": "monthly_sales",
+    "source_column": "d0003",
+    "description": "月營收YoY%",
+    "shape": [
+      15,
+      2
+    ],
+    "date_range": [
+      "2024-11-01 00:00:00",
+      "2026-01-01 00:00:00"
+    ],
+    "tickers": 2
+  },
+  "monthly_rev_mom": {
+    "category": "monthly_sales",
+    "source_column": "d0004",
+    "description": "月營收MoM%",
+    "shape": [
+      15,
+      2
+    ],
+    "date_range": [
+      "2024-11-01 00:00:00",
+      "2026-01-01 00:00:00"
+    ],
+    "tickers": 2
+  },
+  "ytd_rev": {
+    "category": "monthly_sales",
+    "source_column": "d0005",
+    "description": "累計營收(千元)",
+    "shape": [
+      15,
+      2
+    ],
+    "date_range": [
+      "2024-11-01 00:00:00",
+      "2026-01-01 00:00:00"
+    ],
+    "tickers": 2
+  },
+  "ytd_rev_yoy": {
+    "category": "monthly_sales",
+    "source_column": "d0006",
+    "description": "累計營收YoY%",
+    "shape": [
+      15,
+      2
+    ],
+    "date_range": [
+      "2024-11-01 00:00:00",
+      "2026-01-01 00:00:00"
+    ],
+    "tickers": 2
+  },
+  "ytd_rev_yoy_pct": {
+    "category": "monthly_sales",
+    "source_column": "d0007",
+    "description": "累計營收MoM%",
+    "shape": [
+      15,
+      2
+    ],
+    "date_range": [
+      "2024-11-01 00:00:00",
+      "2026-01-01 00:00:00"
+    ],
+    "tickers": 2
+  },
+  "cash_div": {
+    "category": "dividend",
+    "source_column": "divc",
+    "description": "現金股利",
+    "shape": [
+      10,
+      2
+    ],
+    "date_range": [
+      "2021-03-30 00:00:00",
+      "2025-04-10 00:00:00"
+    ],
+    "tickers": 2
+  },
+  "stock_div": {
+    "category": "dividend",
+    "source_column": "divs",
+    "description": "股票股利",
+    "shape": [
+      10,
+      2
+    ],
+    "date_range": [
+      "2021-03-30 00:00:00",
+      "2025-04-10 00:00:00"
+    ],
+    "tickers": 2
+  },
+  "div_type": {
+    "category": "dividend",
+    "source_column": "distri_type",
+    "description": "配息類型",
+    "shape": [
+      10,
+      2
+    ],
+    "date_range": [
+      "2021-03-30 00:00:00",
+      "2025-04-10 00:00:00"
+    ],
+    "tickers": 2
+  },
+  "ex_div_date": {
+    "category": "dividend",
+    "source_column": "edexdate",
+    "description": "除息日",
+    "shape": [
+      10,
+      2
+    ],
+    "date_range": [
+      "2021-03-30 00:00:00",
+      "2025-04-10 00:00:00"
+    ],
+    "tickers": 2
+  },
+  "pay_date": {
+    "category": "dividend",
+    "source_column": "div_date",
+    "description": "發放日",
+    "shape": [
+      10,
+      2
+    ],
+    "date_range": [
+      "2021-03-30 00:00:00",
+      "2025-04-10 00:00:00"
+    ],
+    "tickers": 2
+  },
+  "sa_revenue": {
+    "category": "self_announced",
+    "source_column": "ip12",
+    "description": "自結營收",
+    "shape": [
+      19,
+      2
+    ],
+    "date_range": [
+      "2021-03-01 00:00:00",
+      "2025-09-01 00:00:00"
+    ],
+    "tickers": 2
+  },
+  "sa_opi": {
+    "category": "self_announced",
+    "source_column": "opi",
+    "description": "自結營業利益",
+    "shape": [
+      19,
+      2
+    ],
+    "date_range": [
+      "2021-03-01 00:00:00",
+      "2025-09-01 00:00:00"
+    ],
+    "tickers": 2
+  },
+  "sa_pretax": {
+    "category": "self_announced",
+    "source_column": "isibt",
+    "description": "自結稅前淨利",
+    "shape": [
+      19,
+      2
+    ],
+    "date_range": [
+      "2021-03-01 00:00:00",
+      "2025-09-01 00:00:00"
+    ],
+    "tickers": 2
+  },
+  "sa_net_income": {
+    "category": "self_announced",
+    "source_column": "isnip",
+    "description": "自結稅後淨利",
+    "shape": [
+      19,
+      2
+    ],
+    "date_range": [
+      "2021-03-01 00:00:00",
+      "2025-09-01 00:00:00"
+    ],
+    "tickers": 2
+  },
+  "sa_eps": {
+    "category": "self_announced",
+    "source_column": "eps",
+    "description": "自結EPS",
+    "shape": [
+      19,
+      2
+    ],
+    "date_range": [
+      "2021-03-01 00:00:00",
+      "2025-09-01 00:00:00"
+    ],
+    "tickers": 2
+  },
+  "sa_gpm": {
+    "category": "self_announced",
+    "source_column": "r105",
+    "description": "自結毛利率%",
+    "shape": [
+      19,
+      2
+    ],
+    "date_range": [
+      "2021-03-01 00:00:00",
+      "2025-09-01 00:00:00"
+    ],
+    "tickers": 2
+  },
+  "sa_opm": {
+    "category": "self_announced",
+    "source_column": "r106",
+    "description": "自結營益率%",
+    "shape": [
+      19,
+      2
+    ],
+    "date_range": [
+      "2021-03-01 00:00:00",
+      "2025-09-01 00:00:00"
+    ],
+    "tickers": 2
+  },
+  "sa_npm": {
+    "category": "self_announced",
+    "source_column": "r107",
+    "description": "自結淨利率%",
+    "shape": [
+      19,
+      2
+    ],
+    "date_range": [
+      "2021-03-01 00:00:00",
+      "2025-09-01 00:00:00"
+    ],
+    "tickers": 2
+  },
+  "sa_rev_yoy": {
+    "category": "self_announced",
+    "source_column": "r401",
+    "description": "自結營收成長率%",
+    "shape": [
+      19,
+      2
+    ],
+    "date_range": [
+      "2021-03-01 00:00:00",
+      "2025-09-01 00:00:00"
+    ],
+    "tickers": 2
+  },
+  "sa_opi_yoy": {
+    "category": "self_announced",
+    "source_column": "r403",
+    "description": "自結營業利益成長率%",
+    "shape": [
+      19,
+      2
+    ],
+    "date_range": [
+      "2021-03-01 00:00:00",
+      "2025-09-01 00:00:00"
+    ],
+    "tickers": 2
+  },
+  "sa_ni_yoy": {
+    "category": "self_announced",
+    "source_column": "r404",
+    "description": "自結淨利成長率%",
+    "shape": [
+      19,
+      2
+    ],
+    "date_range": [
+      "2021-03-01 00:00:00",
+      "2025-09-01 00:00:00"
+    ],
+    "tickers": 2
+  },
+  "capital_amt": {
+    "category": "capital",
+    "source_column": "stk_amt",
+    "description": "股本(千元)",
+    "shape": [
+      31,
+      2
+    ],
+    "date_range": [
+      "2021-08-30 00:00:00",
+      "2025-09-09 00:00:00"
+    ],
+    "tickers": 2
+  },
+  "shares_outstanding": {
+    "category": "capital",
+    "source_column": "slamt",
+    "description": "流通股數(千股)",
+    "shape": [
+      31,
+      2
+    ],
+    "date_range": [
+      "2021-08-30 00:00:00",
+      "2025-09-09 00:00:00"
+    ],
+    "tickers": 2
+  },
+  "cash_increase": {
+    "category": "capital",
+    "source_column": "cash",
+    "description": "現金增資",
+    "shape": [
+      31,
+      2
+    ],
+    "date_range": [
+      "2021-08-30 00:00:00",
+      "2025-09-09 00:00:00"
+    ],
+    "tickers": 2
+  },
+  "earning_increase": {
+    "category": "capital",
+    "source_column": "earning",
+    "description": "盈餘轉增資",
+    "shape": [
+      31,
+      2
+    ],
+    "date_range": [
+      "2021-08-30 00:00:00",
+      "2025-09-09 00:00:00"
+    ],
+    "tickers": 2
+  },
+  "capital_reserve": {
+    "category": "capital",
+    "source_column": "capital",
+    "description": "資本公積",
+    "shape": [
+      31,
+      2
+    ],
+    "date_range": [
+      "2021-08-30 00:00:00",
+      "2025-09-09 00:00:00"
+    ],
+    "tickers": 2
+  },
+  "employee_bonus": {
+    "category": "capital",
+    "source_column": "bonus",
+    "description": "員工紅利",
+    "shape": [
+      31,
+      2
+    ],
+    "date_range": [
+      "2021-08-30 00:00:00",
+      "2025-09-09 00:00:00"
+    ],
+    "tickers": 2
+  },
+  "capital_decrease": {
+    "category": "capital",
+    "source_column": "cap_dec",
+    "description": "減資",
+    "shape": [
+      31,
+      2
+    ],
+    "date_range": [
+      "2021-08-30 00:00:00",
+      "2025-09-09 00:00:00"
+    ],
+    "tickers": 2
+  },
+  "qfii_buy": {
+    "category": "chip_extended",
+    "source_column": "qfii_buy",
+    "description": "外資買進量(張)",
+    "shape": [
+      42,
+      2
+    ],
+    "date_range": [
+      "2025-12-08 00:00:00",
+      "2026-02-05 00:00:00"
+    ],
+    "tickers": 2
+  },
+  "qfii_sell": {
+    "category": "chip_extended",
+    "source_column": "qfii_sell",
+    "description": "外資賣出量(張)",
+    "shape": [
+      42,
+      2
+    ],
+    "date_range": [
+      "2025-12-08 00:00:00",
+      "2026-02-05 00:00:00"
+    ],
+    "tickers": 2
+  },
+  "fund_buy": {
+    "category": "chip_extended",
+    "source_column": "fund_buy",
+    "description": "投信買進量(張)",
+    "shape": [
+      42,
+      2
+    ],
+    "date_range": [
+      "2025-12-08 00:00:00",
+      "2026-02-05 00:00:00"
+    ],
+    "tickers": 2
+  },
+  "fund_sell": {
+    "category": "chip_extended",
+    "source_column": "fund_sell",
+    "description": "投信賣出量(張)",
+    "shape": [
+      42,
+      2
+    ],
+    "date_range": [
+      "2025-12-08 00:00:00",
+      "2026-02-05 00:00:00"
+    ],
+    "tickers": 2
+  },
+  "margin_maintenance": {
+    "category": "chip_extended",
+    "source_column": "lmr",
+    "description": "融資維持率%",
+    "shape": [
+      42,
+      2
+    ],
+    "date_range": [
+      "2025-12-08 00:00:00",
+      "2026-02-05 00:00:00"
+    ],
+    "tickers": 2
+  },
+  "short_maintenance": {
+    "category": "chip_extended",
+    "source_column": "smr",
+    "description": "融券維持率%",
+    "shape": [
+      42,
+      2
+    ],
+    "date_range": [
+      "2025-12-08 00:00:00",
+      "2026-02-05 00:00:00"
+    ],
+    "tickers": 2
+  },
+  "total_maintenance": {
+    "category": "chip_extended",
+    "source_column": "tmr",
+    "description": "整戶維持率%",
+    "shape": [
+      42,
+      2
+    ],
+    "date_range": [
+      "2025-12-08 00:00:00",
+      "2026-02-05 00:00:00"
+    ],
+    "tickers": 2
+  },
+  "stock_lending": {
+    "category": "chip_extended",
+    "source_column": "borr_t1",
+    "description": "借券餘額(張)",
+    "shape": [
+      42,
+      2
+    ],
+    "date_range": [
+      "2025-12-08 00:00:00",
+      "2026-02-05 00:00:00"
+    ],
+    "tickers": 2
+  }
+}
