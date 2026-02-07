@@ -241,7 +241,7 @@ class Backtester:
         initial_capital: float = 1_000_000,
         rebalance_freq: str = "weekly",
         transaction_cost: float = 0.001425,
-        tax: float = 0.003,
+        tax: float = 0.0045,
         slippage: float = 0.001,
         allow_fractional: bool = True,
         benchmark: str = None,
