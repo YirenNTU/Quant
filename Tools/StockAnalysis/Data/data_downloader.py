@@ -154,7 +154,19 @@ def download_dividend_data(ticker_code: str, years: int = 4) -> pd.DataFrame | N
     - divs: 股票股利
     - distri_type: 配息類型 (Q1, Q2, Q3, Q4, FY)
     - edexdate: 除息日
+    - emexdate: 除權日
     - div_date: 發放日
+    - distri_beg/distri_end: 盈餘分配起/迄日
+    - dir_d: 董事會日期
+    - mt_d: 股東會日期
+    - zyy: 盈餘分派年度
+    - int_time: 股利支付次數
+    - r16a: 股利支付率
+    - ern: 盈餘配股
+    - cpl: 公積配股
+    - d_issue2: 股票股利發放日
+    - currency: 發放幣別
+    - shortd: 除權息最後回補日
     """
     try:
         data = tejapi.get(
@@ -166,8 +178,17 @@ def download_dividend_data(ticker_code: str, years: int = 4) -> pd.DataFrame | N
         if data.empty:
             return None
         
-        keep_cols = ['mdate', 'distri_type', 'divc', 'divs', 'edexdate', 'div_date', 
-                     'distri_beg', 'distri_end']
+        # 保留所有可用欄位
+        keep_cols = [
+            'mdate', 
+            'distri_type', 'distri_beg', 'distri_end',      # 配息類型與期間
+            'divc', 'divs', 'ern', 'cpl',                  # 股利相關
+            'edexdate', 'emexdate',                        # 除權息日
+            'div_date', 'd_issue2',                        # 發放日
+            'dir_d', 'mt_d', 'zyy',                        # 會議與年度
+            'int_time', 'r16a',                            # 支付次數與支付率
+            'currency', 'shortd',                          # 幣別與回補日
+        ]
         available_cols = [c for c in keep_cols if c in data.columns]
         
         return data[available_cols]
@@ -184,14 +205,24 @@ def download_self_announced(ticker_code: str, months: int = 48) -> pd.DataFrame 
     自結數是公司自行公布的財務數據，比季報更即時
     
     欄位說明:
-    - ip12: 營收
+    - ip12: 營業收入
+    - gm: 營業毛利
     - opi: 營業利益
     - isibt: 稅前淨利
-    - isnip: 稅後淨利
+    - isni: 稅後淨利 (合併總損益)
+    - isnip: 母公司淨利
+    - r306: 每股稅前淨利
+    - r316: 每股稅後淨利
     - eps: 每股盈餘
-    - r106: 營益率%
+    - r105: 營業毛利率%
+    - r106: 營業利益率%
     - r107: 稅前淨利率%
+    - r108: 稅後淨利率%
     - r401: 營收成長率%
+    - r402: 營業毛利成長率%
+    - r403: 營業利益成長率%
+    - r404: 稅前淨利成長率%
+    - r405: 稅後淨利成長率%
     """
     try:
         data = tejapi.get(
@@ -203,8 +234,15 @@ def download_self_announced(ticker_code: str, months: int = 48) -> pd.DataFrame 
         if data.empty:
             return None
         
-        keep_cols = ['mdate', 'annd', 'sem', 'ip12', 'opi', 'isibt', 'isnip', 
-                     'eps', 'r105', 'r106', 'r107', 'r401', 'r403', 'r404']
+        # 保留所有可用欄位
+        keep_cols = [
+            'mdate', 'annd', 'sem',                        # 日期與期間資訊
+            'ip12', 'gm', 'opi',                           # 營收與利益
+            'isibt', 'isni', 'isnip',                      # 淨利相關
+            'r306', 'r316', 'eps',                         # 每股相關
+            'r105', 'r106', 'r107', 'r108',               # 獲利率
+            'r401', 'r402', 'r403', 'r404', 'r405',      # 成長率
+        ]
         available_cols = [c for c in keep_cols if c in data.columns]
         
         return data[available_cols]
@@ -262,7 +300,10 @@ def download_capital_change(ticker_code: str, years: int = 4) -> pd.DataFrame | 
     - slamt: 流通股數 (千股)
     - cash: 現金增資
     - earning: 盈餘轉增資
+    - capital: 資本公積
     - bonus: 員工紅利
+    - cap_dec: 減資
+    - x_cap_date: 資本變更日期
     """
     try:
         data = tejapi.get(
@@ -282,6 +323,57 @@ def download_capital_change(ticker_code: str, years: int = 4) -> pd.DataFrame | 
     
     except Exception as e:
         print(f"   ⚠️  資本形成下載失敗: {e}")
+        return None
+
+
+def download_shareholding_structure(ticker_code: str, days: int = 1460) -> pd.DataFrame | None:
+    """
+    從 TEJ API 下載集保庫存資料 (APISHRACTW)
+    
+    集保庫存資料顯示股權分散結構，可用於分析籌碼集中度
+    
+    欄位說明:
+    - fc_s: 集保庫存股數(千股)
+    - pledg_s: 設質股數(千股)
+    - shrm_u400/shrs_u400/shrp_u400: 未滿400張集保人數/張數/占比
+    - shrm_o400/shrs_o400/shrp_o400: 超過400張集保人數/張數/占比
+    - shrm_4_6/shrs_4_6/shrp_4_6: 400-600張集保人數/張數/占比
+    - shrm_6_8/shrs_6_8/shrp_6_8: 600-800張集保人數/張數/占比
+    - shrm_8_10/shrs_8_10/shrp_8_10: 800-1000張集保人數/張數/占比
+    - shrm_o1000/shrs_o1000/shrp_o1000: 超過1000張集保人數/張數/占比
+    """
+    try:
+        end_date = datetime.now().strftime('%Y-%m-%d')
+        start_date = (datetime.now() - timedelta(days=days)).strftime('%Y-%m-%d')
+        
+        data = tejapi.get(
+            'TWN/APISHRACTW',
+            coid=ticker_code,
+            mdate={'gte': start_date, 'lte': end_date},
+            opts={'sort': 'mdate.desc'},
+            paginate=True
+        )
+        
+        if data.empty:
+            return None
+        
+        # 保留所有可用欄位
+        keep_cols = [
+            'mdate', 'mkt', 'edate1', 'edate2',           # 日期與市場資訊
+            'fc_s', 'pledg_s',                            # 集保庫存與設質
+            'shrm_u400', 'shrs_u400', 'shrp_u400',        # 未滿400張
+            'shrm_o400', 'shrs_o400', 'shrp_o400',        # 超過400張
+            'shrm_4_6', 'shrs_4_6', 'shrp_4_6',           # 400-600張
+            'shrm_6_8', 'shrs_6_8', 'shrp_6_8',           # 600-800張
+            'shrm_8_10', 'shrs_8_10', 'shrp_8_10',        # 800-1000張
+            'shrm_o1000', 'shrs_o1000', 'shrp_o1000',     # 超過1000張
+        ]
+        available_cols = [c for c in keep_cols if c in data.columns]
+        
+        return data[available_cols]
+    
+    except Exception as e:
+        print(f"   ⚠️  集保庫存下載失敗: {e}")
         return None
 
 
@@ -387,6 +479,12 @@ def download_all_data(tickers, force_update=False):
             capital = download_capital_change(code, years=4)
             
             # ============================================================
+            # J. 集保庫存：抓取最近 4 年 (1460天)
+            # ============================================================
+            print("   📊 下載集保庫存 (近4年)...")
+            shareholding = download_shareholding_structure(code, days=1460)
+            
+            # ============================================================
             # 整合並儲存
             # ============================================================
             def safe_to_json(df):
@@ -432,6 +530,7 @@ def download_all_data(tickers, force_update=False):
                 "dividend": safe_to_json(dividend),               # 🆕 股利資料
                 "self_announced": safe_to_json(self_announced),   # 🆕 自結數
                 "capital": safe_to_json(capital),                 # 🆕 資本形成
+                "shareholding": safe_to_json(shareholding),       # 🆕 集保庫存
                 "updated_at": datetime.now().isoformat()
             }
             
@@ -511,6 +610,13 @@ def test_single_download(ticker='2330.TW'):
     capital = download_capital_change(code, years=1)
     if capital is not None:
         print(f"   ✅ 成功! {len(capital)} 筆, 欄位: {list(capital.columns)}")
+    else:
+        print("   ❌ 失敗")
+    
+    print("\n7. 集保庫存 (APISHRACTW):")
+    shareholding = download_shareholding_structure(code, days=30)
+    if shareholding is not None:
+        print(f"   ✅ 成功! {len(shareholding)} 筆, 欄位: {list(shareholding.columns)}")
     else:
         print("   ❌ 失敗")
     

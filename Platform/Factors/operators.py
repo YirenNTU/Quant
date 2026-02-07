@@ -342,22 +342,43 @@ def ts_kurt(data: DataType, window: int) -> DataType:
 # 截面運算 (Cross-Section Operators)
 # ═══════════════════════════════════════════════════════════════════════════════
 
-def rank(data: DataType) -> DataType:
+def rank(data: DataType, group: pd.DataFrame = None) -> DataType:
     """
     截面排名 - 同一時間點所有股票的排名百分位
     
     Args:
         data: DataFrame (rows=日期, cols=股票)
+        group: 分組 DataFrame (用於產業分組排名)，如果提供則按組排名
     
     Returns:
         排名百分位 (0~1，1 表示最高)
     
     Example:
         >>> pe_rank = rank(pe)  # PE 在所有股票中的排名
+        >>> pe_sector_rank = rank(pe, sector_df)  # 產業內排名
     """
     if isinstance(data, pd.Series):
         return data.rank(pct=True)
-    return data.rank(axis=1, pct=True)
+    
+    if group is None:
+        # 整體截面排名
+        return data.rank(axis=1, pct=True)
+    else:
+        # 分組排名 (產業內排名)
+        result = data.copy()
+        for date in data.index:
+            if date not in group.index:
+                continue
+            row = data.loc[date]
+            grp = group.loc[date]
+            for g in grp.unique():
+                if pd.isna(g):
+                    continue
+                mask = grp == g
+                subset = row[mask]
+                if len(subset) > 1:
+                    result.loc[date, mask] = subset.rank(pct=True)
+        return result
 
 
 def zscore(data: DataType, group: pd.DataFrame = None) -> DataType:
@@ -815,6 +836,65 @@ def macd(data: DataType, fast: int = 12, slow: int = 26, signal: int = 9) -> tup
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
+# 產業資料載入
+# ═══════════════════════════════════════════════════════════════════════════════
+
+def load_sector(reference_df: pd.DataFrame, field: str = 'sector') -> pd.DataFrame:
+    """
+    從 Stock_Pool/Database 載入產業資料，對齊到參考 DataFrame
+    
+    Args:
+        reference_df: 參考 DataFrame (用於對齊日期和股票代碼，通常是 close)
+        field: 要載入的欄位 ('sector' 或 'industry')
+    
+    Returns:
+        pd.DataFrame: 產業資料 (rows=日期, cols=股票代碼)
+    
+    Example:
+        >>> close = db.get('close')
+        >>> sector = load_sector(close)  # 載入產業別
+        >>> industry = load_sector(close, 'industry')  # 載入次產業
+        >>> 
+        >>> # 產業內排名
+        >>> pe_sector_rank = rank(pe, sector)
+    """
+    import json
+    from pathlib import Path
+    
+    # 找到 Database 路徑
+    project_root = Path(__file__).parent.parent.parent
+    db_path = project_root / 'Stock_Pool' / 'Database'
+    
+    if not db_path.exists():
+        raise FileNotFoundError(f"找不到 Database 路徑: {db_path}")
+    
+    # 讀取所有股票的產業資料
+    sector_map = {}
+    for json_file in db_path.glob('*_*.json'):
+        try:
+            ticker = json_file.stem.split('_')[0]  # 取得股票代碼
+            with open(json_file, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+                if field in data:
+                    sector_map[ticker] = data[field]
+        except Exception:
+            continue
+    
+    # 建立產業 DataFrame，對齊到參考 DataFrame
+    result = pd.DataFrame(
+        index=reference_df.index,
+        columns=reference_df.columns
+    )
+    
+    for col in reference_df.columns:
+        ticker = str(col)
+        if ticker in sector_map:
+            result[col] = sector_map[ticker]
+    
+    return result
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
 # 匯出所有函數
 # ═══════════════════════════════════════════════════════════════════════════════
 
@@ -839,6 +919,9 @@ __all__ = [
     
     # 組合因子
     'momentum', 'volatility', 'rsi', 'bollinger_position', 'macd',
+    
+    # 產業資料
+    'load_sector',
 ]
 
 

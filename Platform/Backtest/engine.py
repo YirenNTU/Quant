@@ -243,6 +243,7 @@ class Backtester:
         transaction_cost: float = 0.001425,
         tax: float = 0.003,
         slippage: float = 0.001,
+        allow_fractional: bool = True,
         benchmark: str = None,
         db = None,
     ) -> BacktestResult:
@@ -258,6 +259,7 @@ class Backtester:
             transaction_cost: 手續費率
             tax: 證交稅率 (賣出時)
             slippage: 滑價
+            allow_fractional: 是否允許零股交易 (預設 True)
             benchmark: 基準指數代碼 (可選)
             db: FieldDB 實例 (可選，不傳會自動載入)
         
@@ -314,6 +316,7 @@ class Backtester:
             transaction_cost=transaction_cost,
             tax=tax,
             slippage=slippage,
+            allow_fractional=allow_fractional,
         )
         
         # 計算績效指標
@@ -369,6 +372,7 @@ class Backtester:
         transaction_cost: float,
         tax: float,
         slippage: float,
+        allow_fractional: bool = True,
     ) -> tuple:
         """模擬交易"""
         
@@ -397,6 +401,11 @@ class Backtester:
                 # 目標持倉
                 target_value = target_weights * total_value
                 target_shares = (target_value / price).fillna(0)
+                
+                # 如果不允許零股，則取整到整張 (1000股)
+                if not allow_fractional:
+                    # 整張交易: 取整到1000股
+                    target_shares = (target_shares / 1000).apply(np.floor) * 1000
                 
                 # 計算交易
                 trade_shares = target_shares - holdings

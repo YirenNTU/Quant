@@ -231,6 +231,7 @@ FIELD_DEFINITIONS = {
             "qfii_net": {"column": "qfii_ex", "description": "外資買賣超(張)"},
             "fund_net": {"column": "fund_ex", "description": "投信買賣超(張)"},
             "dealer_net": {"column": "tot_ex", "description": "三大法人合計"},
+            "dealer_ex": {"column": "dlr_ex", "description": "自營商買賣超(張)"},
             
             # 法人持股比例
             "qfii_pct": {"column": "qfii_pct", "description": "外資持股%"},
@@ -277,11 +278,31 @@ FIELD_DEFINITIONS = {
         "source_key": "dividend",
         "date_column": "mdate",
         "fields": {
+            # 股利金額
             "cash_div": {"column": "divc", "description": "現金股利"},
             "stock_div": {"column": "divs", "description": "股票股利"},
+            "ern_div": {"column": "ern", "description": "盈餘配股"},
+            "cpl_div": {"column": "cpl", "description": "公積配股"},
+            
+            # 配息資訊
             "div_type": {"column": "distri_type", "description": "配息類型"},
+            "div_beg_date": {"column": "distri_beg", "description": "配息期間起日"},
+            "div_end_date": {"column": "distri_end", "description": "配息期間迄日"},
+            "div_year": {"column": "zyy", "description": "盈餘分派年度"},
+            "div_payment_times": {"column": "int_time", "description": "股利支付次數"},
+            "div_payout_ratio": {"column": "r16a", "description": "股利支付率%"},
+            
+            # 日期
             "ex_div_date": {"column": "edexdate", "description": "除息日"},
-            "pay_date": {"column": "div_date", "description": "發放日"},
+            "ex_right_date": {"column": "emexdate", "description": "除權日"},
+            "pay_date": {"column": "div_date", "description": "現金股利發放日"},
+            "stock_div_date": {"column": "d_issue2", "description": "股票股利發放日"},
+            "short_cover_date": {"column": "shortd", "description": "除權息最後回補日"},
+            "board_date": {"column": "dir_d", "description": "董事會日期"},
+            "shareholder_meeting_date": {"column": "mt_d", "description": "股東會日期"},
+            
+            # 其他
+            "div_currency": {"column": "currency", "description": "發放幣別"},
         }
     },
     
@@ -298,17 +319,31 @@ FIELD_DEFINITIONS = {
         "source_key": "self_announced",
         "date_column": "mdate",
         "fields": {
+            # 損益項目
             "sa_revenue": {"column": "ip12", "description": "自結營收"},
+            "sa_gross_profit": {"column": "gm", "description": "自結營業毛利"},
             "sa_opi": {"column": "opi", "description": "自結營業利益"},
             "sa_pretax": {"column": "isibt", "description": "自結稅前淨利"},
-            "sa_net_income": {"column": "isnip", "description": "自結稅後淨利"},
+            "sa_net_income": {"column": "isni", "description": "自結稅後淨利(合併總損益)"},
+            "sa_net_income_parent": {"column": "isnip", "description": "自結稅後淨利(母公司)"},
+            
+            # 每股相關
             "sa_eps": {"column": "eps", "description": "自結EPS"},
+            "sa_eps_pretax": {"column": "r306", "description": "自結每股稅前淨利"},
+            "sa_eps_net": {"column": "r316", "description": "自結每股稅後淨利"},
+            
+            # 獲利率
             "sa_gpm": {"column": "r105", "description": "自結毛利率%"},
             "sa_opm": {"column": "r106", "description": "自結營益率%"},
-            "sa_npm": {"column": "r107", "description": "自結淨利率%"},
+            "sa_pretax_npm": {"column": "r107", "description": "自結稅前淨利率%"},
+            "sa_npm": {"column": "r108", "description": "自結稅後淨利率%"},
+            
+            # 成長率
             "sa_rev_yoy": {"column": "r401", "description": "自結營收成長率%"},
+            "sa_gm_yoy": {"column": "r402", "description": "自結營業毛利成長率%"},
             "sa_opi_yoy": {"column": "r403", "description": "自結營業利益成長率%"},
-            "sa_ni_yoy": {"column": "r404", "description": "自結淨利成長率%"},
+            "sa_pretax_yoy": {"column": "r404", "description": "自結稅前淨利成長率%"},
+            "sa_ni_yoy": {"column": "r405", "description": "自結稅後淨利成長率%"},
         }
     },
     
@@ -330,6 +365,7 @@ FIELD_DEFINITIONS = {
             "capital_reserve": {"column": "capital", "description": "資本公積"},
             "employee_bonus": {"column": "bonus", "description": "員工紅利"},
             "capital_decrease": {"column": "cap_dec", "description": "減資"},
+            "capital_change_date": {"column": "x_cap_date", "description": "資本變更日期"},
         }
     },
     
@@ -355,6 +391,55 @@ FIELD_DEFINITIONS = {
             "total_maintenance": {"column": "tmr", "description": "整戶維持率%"},
             # 借券
             "stock_lending": {"column": "borr_t1", "description": "借券餘額(張)"},
+        }
+    },
+    
+    # ═══════════════════════════════════════════════════════════════════════════
+    # SHAREHOLDING - 集保庫存資料 (🆕 新增)
+    # ═══════════════════════════════════════════════════════════════════════════
+    # 來源: data_downloader.py → download_shareholding_structure(ticker, days=1460)
+    # API: TWN/APISHRACTW
+    # 格式: orient='split', index=row number, columns=欄位 (含 mdate)
+    # 
+    # 集保庫存資料顯示股權分散結構，可用於分析籌碼集中度
+    # ═══════════════════════════════════════════════════════════════════════════
+    "shareholding": {
+        "source_key": "shareholding",
+        "date_column": "mdate",
+        "fields": {
+            # 基本資訊
+            "fc_shares": {"column": "fc_s", "description": "集保庫存股數(千股)"},
+            "pledged_shares": {"column": "pledg_s", "description": "設質股數(千股)"},
+            
+            # 未滿400張
+            "shrm_u400": {"column": "shrm_u400", "description": "未滿400張集保人數"},
+            "shrs_u400": {"column": "shrs_u400", "description": "未滿400張集保張數(千股)"},
+            "shrp_u400": {"column": "shrp_u400", "description": "未滿400張集保占比%"},
+            
+            # 超過400張
+            "shrm_o400": {"column": "shrm_o400", "description": "超過400張集保人數"},
+            "shrs_o400": {"column": "shrs_o400", "description": "超過400張集保張數(千股)"},
+            "shrp_o400": {"column": "shrp_o400", "description": "超過400張集保占比%"},
+            
+            # 400-600張
+            "shrm_4_6": {"column": "shrm_4_6", "description": "400-600張集保人數"},
+            "shrs_4_6": {"column": "shrs_4_6", "description": "400-600張集保張數(千股)"},
+            "shrp_4_6": {"column": "shrp_4_6", "description": "400-600張集保占比%"},
+            
+            # 600-800張
+            "shrm_6_8": {"column": "shrm_6_8", "description": "600-800張集保人數"},
+            "shrs_6_8": {"column": "shrs_6_8", "description": "600-800張集保張數(千股)"},
+            "shrp_6_8": {"column": "shrp_6_8", "description": "600-800張集保占比%"},
+            
+            # 800-1000張
+            "shrm_8_10": {"column": "shrm_8_10", "description": "800-1000張集保人數"},
+            "shrs_8_10": {"column": "shrs_8_10", "description": "800-1000張集保張數(千股)"},
+            "shrp_8_10": {"column": "shrp_8_10", "description": "800-1000張集保占比%"},
+            
+            # 超過1000張
+            "shrm_o1000": {"column": "shrm_o1000", "description": "超過1000張集保人數"},
+            "shrs_o1000": {"column": "shrs_o1000", "description": "超過1000張集保張數(千股)"},
+            "shrp_o1000": {"column": "shrp_o1000", "description": "超過1000張集保占比%"},
         }
     },
 }
@@ -773,14 +858,16 @@ class FieldDB:
             對齊到日報日期的資料，用前值填充
         """
         # 取得日報日期索引 (用 close)
-        if 'close' not in self._cache.get(('close', True), {}) if isinstance(self._cache.get(('close', True)), dict) else False:
+        cache_key = ('close', True)
+        if cache_key not in self._cache:
+            # 如果 close 不在 cache 中，直接從檔案讀取索引
             close_path = self.db_path / "price" / f"close.{OUTPUT_FORMAT}"
             if OUTPUT_FORMAT == "parquet":
                 daily_index = pd.read_parquet(close_path).index
             else:
                 daily_index = pd.read_csv(close_path, index_col=0, parse_dates=True).index
         else:
-            daily_index = self._cache[('close', True)].index
+            daily_index = self._cache[cache_key].index
         
         # 對齊並填充
         df_aligned = df.reindex(daily_index).ffill()

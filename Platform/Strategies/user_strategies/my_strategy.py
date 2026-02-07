@@ -55,10 +55,11 @@ class MyStrategy(Strategy):
     # =========================================================================
     
     params = {
-        "lookback": 20,      # 動量回看期數
-        "top_n": 10,         # 持有股票數量
-        # 可以新增更多參數...
-    }
+            "value_weight": 0.4,       # 價值權重
+            "growth_weight": 0.4,      # 轉折權重
+            "chip_weight": 0.2,        # 籌碼權重
+            "ma_filter": 60,           # 趨勢過濾
+        }
     
     # =========================================================================
     # 核心方法: compute() - 計算因子分數 (必須實作)
@@ -82,17 +83,17 @@ class MyStrategy(Strategy):
         
         【PRICE 價格類】21 個欄位，完整度 99%+
         ─────────────────────────────────────────────────────────────────
-        close, open, high, low        收開高低
-        volume, amount, trades        成交量、金額、筆數
+        close, open, high, low        收開高低價
+        volume, amount, trades        成交量(股)、成交金額、成交筆數
         turnover                      週轉率%
         mktcap, shares                市值、流通股數
         pe, pb, psr                   本益比、淨值比、營收比
-        pe_tej, pb_tej                PE/PB (TEJ)
-        div_yield, cdiv_yield         殖利率、現金殖利率
-        daily_return, amplitude       日報酬率、振幅
+        pe_tej, pb_tej                PE/PB (TEJ版本)
+        div_yield, cdiv_yield         殖利率%、現金殖利率%
+        daily_return, amplitude       日報酬率%、振幅%
         avgprc, adjfac                均價、還原因子
         
-        【FINANCIALS 財報類】9 個欄位，完整度 80%+
+        【FINANCIALS 財報類】9 個欄位，完整度 80%+ (季報頻率)
         ─────────────────────────────────────────────────────────────────
         revenue                       營業收入
         gross_profit                  毛利
@@ -103,7 +104,7 @@ class MyStrategy(Strategy):
         dso                           應收帳款天數
         days_payable                  應付帳款天數
         
-        【BALANCE_SHEET 資產負債類】5 個欄位，完整度 80%+
+        【BALANCE_SHEET 資產負債類】5 個欄位，完整度 80%+ (季報頻率)
         ─────────────────────────────────────────────────────────────────
         total_assets                  資產總額
         total_debt                    負債總額
@@ -111,20 +112,29 @@ class MyStrategy(Strategy):
         current_assets                流動資產
         accounts_receivable           應收帳款
         
-        【CASHFLOW 現金流類】1 個欄位，完整度 94%
+        【CASHFLOW 現金流類】1 個欄位，完整度 94% (季報頻率)
         ─────────────────────────────────────────────────────────────────
         ocf                           營業現金流
         
-        【CHIP 籌碼類】9 個欄位，完整度 100%
+        【CHIP 籌碼類】9 個欄位，完整度 100% (日頻)
         ─────────────────────────────────────────────────────────────────
         qfii_net, fund_net            外資/投信買賣超(張)
-        dealer_net                    三大法人合計
+        dealer_net                    三大法人合計(張)
         qfii_pct, fund_pct            外資/投信持股%
         dealer_pct                    自營商持股%
         margin_long, margin_short     融資/融券餘額(張)
         short_ratio                   券資比%
         
-        【MONTHLY_SALES 月營收類】6 個欄位，完整度 94%
+        【CHIP_EXTENDED 籌碼擴充類】8 個欄位，完整度 100% (日頻)
+        ─────────────────────────────────────────────────────────────────
+        qfii_buy, qfii_sell           外資買進/賣出量(張)
+        fund_buy, fund_sell           投信買進/賣出量(張)
+        margin_maintenance            融資維持率%
+        short_maintenance              融券維持率%
+        total_maintenance              整戶維持率%
+        stock_lending                 借券餘額(張)
+        
+        【MONTHLY_SALES 月營收類】7 個欄位，完整度 94% (月頻)
         ─────────────────────────────────────────────────────────────────
         monthly_rev                   當月營收(千元)
         monthly_rev_alt               月營收(千元)
@@ -132,6 +142,66 @@ class MyStrategy(Strategy):
         monthly_rev_mom               月營收MoM%
         ytd_rev                       累計營收(千元)
         ytd_rev_yoy                   累計營收YoY%
+        ytd_rev_yoy_pct               累計營收MoM%
+        
+        【DIVIDEND 股利類】18 個欄位，完整度 98% (事件頻率)
+        ─────────────────────────────────────────────────────────────────
+        cash_div, stock_div           現金股利、股票股利
+        ern_div, cpl_div              盈餘配股、公積配股
+        div_type                      配息類型
+        div_beg_date, div_end_date    配息期間起/迄日
+        div_year                      盈餘分派年度
+        div_payment_times             股利支付次數
+        div_payout_ratio              股利支付率%
+        ex_div_date, ex_right_date    除息日、除權日
+        pay_date, stock_div_date      現金/股票股利發放日
+        short_cover_date              除權息最後回補日
+        board_date                    董事會日期
+        shareholder_meeting_date      股東會日期
+        div_currency                  發放幣別
+        
+        【CAPITAL 資本類】8 個欄位，完整度 67% (事件頻率)
+        ─────────────────────────────────────────────────────────────────
+        capital_amt                   股本(千元)
+        shares_outstanding             流通股數(千股)
+        cash_increase                 現金增資
+        earning_increase               盈餘轉增資
+        capital_reserve                資本公積
+        employee_bonus                員工紅利
+        capital_decrease               減資
+        capital_change_date            資本變更日期
+        
+        【SELF_ANNOUNCED 自結財報類】18 個欄位，完整度 99% (季報頻率)
+        ─────────────────────────────────────────────────────────────────
+        sa_revenue                    自結營收
+        sa_gross_profit               自結營業毛利
+        sa_opi                        自結營業利益
+        sa_pretax                     自結稅前淨利
+        sa_net_income                 自結稅後淨利(合併總損益)
+        sa_net_income_parent          自結稅後淨利(母公司)
+        sa_eps                        自結EPS
+        sa_eps_pretax                 自結每股稅前淨利
+        sa_eps_net                    自結每股稅後淨利
+        sa_gpm                        自結毛利率%
+        sa_opm                        自結營益率%
+        sa_pretax_npm                 自結稅前淨利率%
+        sa_npm                        自結稅後淨利率%
+        sa_rev_yoy                    自結營收成長率%
+        sa_gm_yoy                     自結營業毛利成長率%
+        sa_opi_yoy                    自結營業利益成長率%
+        sa_pretax_yoy                 自結稅前淨利成長率%
+        sa_ni_yoy                     自結稅後淨利成長率%
+        
+        【SHAREHOLDING 集保庫存類】22 個欄位，完整度 100% (日頻)
+        ─────────────────────────────────────────────────────────────────
+        fc_shares                     集保庫存股數(千股)
+        pledged_shares                設質股數(千股)
+        shrm_u400, shrs_u400, shrp_u400  未滿400張: 人數/張數/占比
+        shrm_o400, shrs_o400, shrp_o400  超過400張: 人數/張數/占比
+        shrm_4_6, shrs_4_6, shrp_4_6     400-600張: 人數/張數/占比
+        shrm_6_8, shrs_6_8, shrp_6_8     600-800張: 人數/張數/占比
+        shrm_8_10, shrs_8_10, shrp_8_10  800-1000張: 人數/張數/占比
+        shrm_o1000, shrs_o1000, shrp_o1000 超過1000張: 人數/張數/占比
         
         ⚠️ TEJ 初入江湖版無資料 (請勿使用):
         ─────────────────────────────────────────────────────────────────
@@ -142,36 +212,60 @@ class MyStrategy(Strategy):
         可用運算工具
         ═══════════════════════════════════════════════════════════════════
         
-        【時序運算】
-        ts_delay(data, n)             N 期前的值
-        ts_delta(data, n)             與 N 期前的差值
-        ts_pct_change(data, n)        N 期報酬率
-        ts_mean(data, n)              N 日移動平均
-        ts_sum(data, n)               N 日加總
-        ts_std(data, n)               N 日標準差
-        ts_max(data, n)               N 日最高
-        ts_min(data, n)               N 日最低
-        ts_rank(data, n)              時序排名 (0~1)
-        ts_zscore(data, n)            時序 Z-Score
-        ts_corr(x, y, n)              滾動相關係數
-        ts_argmax(data, n)            最大值幾期前
-        ts_argmin(data, n)            最小值幾期前
+        【時序運算 (Time-Series Operators)】
+        ts_delay(data, periods)       N 期前的值
+        ts_delta(data, periods)       與 N 期前的差值
+        ts_pct_change(data, periods)  N 期報酬率
+        ts_mean(data, window)         N 日移動平均
+        ts_sum(data, window)          N 日加總
+        ts_std(data, window)          N 日標準差
+        ts_max(data, window)          N 日最高
+        ts_min(data, window)          N 日最低
+        ts_rank(data, window)        時序排名 (0~1)
+        ts_zscore(data, window)      時序 Z-Score
+        ts_corr(x, y, window)         滾動相關係數
+        ts_cov(x, y, window)          滾動共變異數
+        ts_skew(data, window)         滾動偏態
+        ts_kurt(data, window)         滾動峰態
+        ts_argmax(data, window)       最大值幾期前
+        ts_argmin(data, window)       最小值幾期前
         
-        【截面運算】
-        rank(data)                    截面排名 (0~1)
-        zscore(data)                  截面 Z-Score 標準化
+        【截面運算 (Cross-Section Operators)】
+        rank(data, group=None)        截面排名 (0~1)，可選分組(產業內排名)
+        zscore(data, group=None)      截面 Z-Score，可選分組(產業中性化)
         demean(data)                  去均值
-        winsorize(data, lo, hi)       縮尾處理
+        neutralize(data, factor)      對因子中性化
+        winsorize(data, lo, hi)       縮尾處理 (預設 0.01, 0.99)
         
-        【衰減運算】
-        decay_linear(data, n)         線性衰減加權
-        decay_exp(data, n)            指數衰減 (EMA)
+        【衰減運算 (Decay Operators)】
+        decay_linear(data, window)    線性衰減加權
+        decay_exp(data, window)      指數衰減 (EMA)
+        decay_power(data, window, p) 冪次衰減加權
         
-        【組合因子】
-        momentum(data, n)             動量
-        volatility(data, n)           波動率
-        rsi(data, n)                  RSI 指標
-        bollinger_position(data, n)   布林通道位置
+        【邏輯運算 (Logical Operators)】
+        if_else(cond, if_t, if_f)     條件判斷
+        sign(data)                    符號函數 (-1/0/1)
+        abs_val(data)                 絕對值
+        log(data)                      自然對數
+        power(data, exp)               冪次運算
+        
+        【基礎運算 (Basic Operators)】
+        add(a, b), subtract(a, b)    加減運算
+        multiply(a, b), divide(a, b) 乘除運算
+        safe_divide(a, b, fill=0)     安全除法(避免除零)
+        
+        【組合因子 (Composite Factors)】
+        momentum(data, periods)       動量因子
+        volatility(data, window)      波動率
+        rsi(data, window=14)          RSI 指標 (0~100)
+        bollinger_position(data, w, s) 布林通道位置
+        macd(data, fast, slow, sig)   MACD 指標 (返回 tuple)
+        
+        【產業分類工具 (Sector Tools)】
+        load_sector(ref_df, field)    載入產業資料
+                                      field='sector' 或 'industry'
+                                      範例: industry = load_sector(close, 'industry')
+                                      搭配 rank/zscore 使用: rank(pe, industry)
         ═══════════════════════════════════════════════════════════════════
         """
         
@@ -179,42 +273,24 @@ class MyStrategy(Strategy):
         # 在這裡實作你的策略邏輯
         # =====================================================================
         
-        # --- 載入資料 ---
         close = db.get('close')
-        volume = db.get('volume')
-        pe = db.get('pe')
-        div_yield = db.get('div_yield')
+        qfii_net = db.get('qfii_net')
+        dso = db.get('dso')
+        pe = db.get("pe")
+        industry = load_sector(close,"industry")
+        div_yield = db.get("div_yield")
         
-        # --- 計算因子 ---
-        
-        # 因子 1: 動量 (過去 N 天報酬率)
-        momentum_factor = ts_pct_change(close, self.params["lookback"])
-        
-        # 因子 2: 成交量排名
-        volume_factor = ts_rank(volume, 20)
-        
-        # 因子 3: 價值 (PE 越低越好)
-        value_factor = -pe.ffill()
-        
-        # 因子 4: 高股息
-        dividend_factor = div_yield.ffill()
-        
-        # --- 標準化 ---
-        mom_score = zscore(momentum_factor)
-        vol_score = zscore(volume_factor)
-        val_score = zscore(value_factor)
-        div_score = zscore(dividend_factor)
-        
-        # --- 組合分數 ---
-        # 調整權重來改變策略特性
-        score = (
-            0.30 * mom_score +    # 動量權重 30%
-            0.20 * vol_score +    # 成交量權重 20%
-            0.25 * val_score +    # 價值權重 25%
-            0.25 * div_score      # 股息權重 25%
+        price_factor = ts_pct_change(close,90)
+        # 使用 element-wise 條件判斷：如果 price_factor > 0.15 或 < -0.10，則取負值
+        score = price_factor.where(
+            (price_factor <= 0.20) & (price_factor >= -0.15),
+            -price_factor
         )
+        div_factor = rank(div_yield,industry).where((div_yield > 0.01)&(div_yield<0.05), -div_yield.fillna(0))
+            
+        total_score = score.fillna(0) + div_factor.fillna(0)
         
-        return score
+        return total_score
     
     # =========================================================================
     # 選擇性方法: filter_universe() - 篩選投資範圍
@@ -269,7 +345,7 @@ if __name__ == '__main__':
     
     result = Backtester.run(
         strategy=strategy,
-        start_date="2024-06-01",      # 開始日期
+        start_date="2022-02-07",      # 開始日期 (4年回測)
         end_date=None,                 # 結束日期 (None = 最新)
         initial_capital=1_000_000,     # 初始資金
         rebalance_freq="weekly",       # 調倉頻率: daily, weekly, monthly
