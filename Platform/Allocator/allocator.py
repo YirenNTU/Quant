@@ -227,8 +227,8 @@ class Allocator:
                 shares = target_amount / price
                 shares = max(shares, 0)  # 至少 0 股
                 
-                # 如果權重夠高但股數太少，至少買 1 股
-                if shares < 1 and weight >= min_weight:
+                # 🆕 改進：如果權重 > 0 但股數太少，至少買 1 股（降低門檻）
+                if shares < 1 and weight > 0:
                     shares = 1
                 
                 if shares > 0:
@@ -248,14 +248,34 @@ class Allocator:
                             'shares': shares,  # 實際股數（可能是零股）
                             'amount': actual_amount,
                         })
+                    elif len(allocations) == 0:
+                        # 🆕 如果還沒有任何配置且資金不足，至少配置這檔（使用剩餘資金）
+                        remaining_capital = capital - total_allocated
+                        if remaining_capital > 0:
+                            shares = remaining_capital / price
+                            if shares >= 1:  # 至少買 1 股
+                                actual_amount = shares * price
+                                lots = shares / lot_size
+                                total_allocated += actual_amount
+                                
+                                allocations.append({
+                                    'ticker': ticker,
+                                    'name': ticker_info.get(ticker, '-'),
+                                    'score': top_scores_original[ticker],
+                                    'weight': actual_amount / capital,
+                                    'price': price,
+                                    'lots': lots,
+                                    'shares': shares,
+                                    'amount': actual_amount,
+                                })
             else:
                 # 原有邏輯：只買整張
                 # 計算張數 (取整)
                 lots = int(target_amount / (price * lot_size))
                 lots = max(lots, 0)  # 至少 0 張
                 
-                # 如果張數不足最小張數但權重夠高，至少買一張
-                if lots == 0 and weight >= min_weight and (price * lot_size) <= target_amount * 1.5:
+                # 🆕 改進：如果權重 > 0 但張數不足，至少買一張（降低門檻）
+                if lots == 0 and weight > 0 and (price * lot_size) <= target_amount * 1.5:
                     lots = min_lots
                 
                 if lots > 0:
@@ -275,11 +295,71 @@ class Allocator:
                             'shares': shares,
                             'amount': actual_amount,
                         })
+                    elif len(allocations) == 0:
+                        # 🆕 如果還沒有任何配置且資金不足，至少配置這檔（使用剩餘資金）
+                        remaining_capital = capital - total_allocated
+                        if remaining_capital >= price * lot_size:
+                            # 至少買一張
+                            shares = lot_size
+                            actual_amount = shares * price
+                            total_allocated += actual_amount
+                            
+                            allocations.append({
+                                'ticker': ticker,
+                                'name': ticker_info.get(ticker, '-'),
+                                'score': top_scores_original[ticker],
+                                'weight': actual_amount / capital,
+                                'price': price,
+                                'lots': 1,
+                                'shares': shares,
+                                'amount': actual_amount,
+                            })
         
         # 建立 DataFrame
         alloc_df = pd.DataFrame(allocations)
         if len(alloc_df) > 0:
             alloc_df = alloc_df.sort_values('weight', ascending=False)
+        else:
+            # 🆕 如果沒有任何配置，至少配置分數最高的股票
+            if len(top_scores_original) > 0:
+                top_ticker = top_scores_original.idxmax()
+                price = prices[top_ticker]
+                
+                if allow_fractional:
+                    # 使用全部資金的 10% 至少買 1 股
+                    target_amount = min(capital * 0.1, capital)
+                    shares = max(target_amount / price, 1)
+                    actual_amount = shares * price
+                    lots = shares / lot_size
+                    
+                    alloc_df = pd.DataFrame([{
+                        'ticker': top_ticker,
+                        'name': ticker_info.get(top_ticker, '-'),
+                        'score': top_scores_original[top_ticker],
+                        'weight': actual_amount / capital,
+                        'price': price,
+                        'lots': lots,
+                        'shares': shares,
+                        'amount': actual_amount,
+                    }])
+                    total_allocated = actual_amount
+                else:
+                    # 至少買一張
+                    if capital >= price * lot_size:
+                        shares = lot_size
+                        actual_amount = shares * price
+                        alloc_df = pd.DataFrame([{
+                            'ticker': top_ticker,
+                            'name': ticker_info.get(top_ticker, '-'),
+                            'score': top_scores_original[top_ticker],
+                            'weight': actual_amount / capital,
+                            'price': price,
+                            'lots': 1,
+                            'shares': shares,
+                            'amount': actual_amount,
+                        }])
+                        total_allocated = actual_amount
+                        total_allocated = actual_amount
         
         # 摘要
         summary = {
