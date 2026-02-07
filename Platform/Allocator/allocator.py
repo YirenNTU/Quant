@@ -165,15 +165,27 @@ class Allocator:
                 summary={'n_positions': 0, 'total_allocated': 0, 'cash_remaining': capital, 'allocation_pct': 0},
             )
         
-        top_scores = scores.nlargest(top_n)
-        
-        # 計算權重 (分數正規化)
-        score_min = top_scores.min()
-        score_range = top_scores.max() - score_min
-        if score_range > 0:
-            weights = (top_scores - score_min) / score_range
+        # 🆕 先對所有有效分數進行標準化（Z-score）
+        score_mean = scores.mean()
+        score_std = scores.std()
+        if score_std > 0:
+            standardized_scores = (scores - score_mean) / score_std
         else:
-            weights = pd.Series(1.0, index=top_scores.index)
+            standardized_scores = scores
+        
+        # 然後取 top N（使用標準化後的分數）
+        top_scores_standardized = standardized_scores.nlargest(top_n)
+        
+        # 保存原始分數用於顯示（使用相同的 ticker index）
+        top_scores_original = scores[top_scores_standardized.index]
+        
+        # 計算權重（使用標準化後的分數進行 min-max 正規化）
+        score_min = top_scores_standardized.min()
+        score_range = top_scores_standardized.max() - score_min
+        if score_range > 0:
+            weights = (top_scores_standardized - score_min) / score_range
+        else:
+            weights = pd.Series(1.0, index=top_scores_standardized.index)
         
         # 正規化
         weight_sum = weights.sum()
@@ -185,8 +197,8 @@ class Allocator:
         # 如果有太多股票權重過低，先篩選
         weights = weights[weights >= min_weight / 2]
         if len(weights) == 0:
-            if len(top_scores) > 0:
-                weights = pd.Series(1.0 / len(top_scores), index=top_scores.index)
+            if len(top_scores_standardized) > 0:
+                weights = pd.Series(1.0 / len(top_scores_standardized), index=top_scores_standardized.index)
             else:
                 print("⚠️ 無法計算權重")
                 return AllocationResult(
@@ -229,7 +241,7 @@ class Allocator:
                         allocations.append({
                             'ticker': ticker,
                             'name': ticker_info.get(ticker, '-'),
-                            'score': top_scores[ticker],
+                            'score': top_scores_original[ticker],  # 使用原始分數顯示
                             'weight': actual_amount / capital,
                             'price': price,
                             'lots': lots,  # 可能是小數（如 0.5 張）
@@ -256,7 +268,7 @@ class Allocator:
                         allocations.append({
                             'ticker': ticker,
                             'name': ticker_info.get(ticker, '-'),
-                            'score': top_scores[ticker],
+                            'score': top_scores_original[ticker],  # 使用原始分數顯示
                             'weight': actual_amount / capital,
                             'price': price,
                             'lots': lots,
