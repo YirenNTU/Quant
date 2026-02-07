@@ -64,7 +64,9 @@ class AllocationResult:
             amount = row['amount']
             lots = row['lots']
             
-            text += f"\n│{ticker:<8}│{name:<12}│{weight:>8.1f}│{price:>10,.0f}│{amount:>10,.0f}│{lots:>8.0f}│"
+            # 顯示張數（如果是零股則顯示小數）
+            lots_display = f"{lots:.2f}" if lots < 1 else f"{lots:.0f}"
+            text += f"\n│{ticker:<8}│{name:<12}│{weight:>8.1f}│{price:>10,.0f}│{amount:>10,.0f}│{lots_display:>8}│"
         
         text += f"""
 └{'─'*8}┴{'─'*12}┴{'─'*10}┴{'─'*12}┴{'─'*12}┴{'─'*10}┘
@@ -97,6 +99,7 @@ class Allocator:
         min_weight: float = 0.03,
         lot_size: int = 1000,  # 一張 = 1000 股
         min_lots: int = 1,     # 最少買一張
+        allow_fractional: bool = False,  # 是否允許零股交易
         db = None,
     ) -> AllocationResult:
         """
@@ -110,6 +113,7 @@ class Allocator:
             min_weight: 單一標的最小權重
             lot_size: 每張股數 (預設 1000)
             min_lots: 最少張數 (預設 1)
+            allow_fractional: 是否允許零股交易 (預設 False)
             db: FieldDB 實例
         
         Returns:
@@ -206,31 +210,59 @@ class Allocator:
             price = prices[ticker]
             target_amount = capital * weight
             
-            # 計算張數 (取整)
-            lots = int(target_amount / (price * lot_size))
-            lots = max(lots, 0)  # 至少 0 張
-            
-            # 如果張數不足最小張數但權重夠高，至少買一張
-            if lots == 0 and weight >= min_weight and (price * lot_size) <= target_amount * 1.5:
-                lots = min_lots
-            
-            if lots > 0:
-                shares = lots * lot_size
-                actual_amount = shares * price
+            if allow_fractional:
+                # 🆕 允許零股：直接計算股數，不取整到整張
+                shares = target_amount / price
+                shares = max(shares, 0)  # 至少 0 股
                 
-                if total_allocated + actual_amount <= capital:
-                    total_allocated += actual_amount
+                # 如果權重夠高但股數太少，至少買 1 股
+                if shares < 1 and weight >= min_weight:
+                    shares = 1
+                
+                if shares > 0:
+                    actual_amount = shares * price
+                    lots = shares / lot_size  # 換算成張數（可能小於 1）
                     
-                    allocations.append({
-                        'ticker': ticker,
-                        'name': ticker_info.get(ticker, '-'),
-                        'score': top_scores[ticker],
-                        'weight': actual_amount / capital,
-                        'price': price,
-                        'lots': lots,
-                        'shares': shares,
-                        'amount': actual_amount,
-                    })
+                    if total_allocated + actual_amount <= capital:
+                        total_allocated += actual_amount
+                        
+                        allocations.append({
+                            'ticker': ticker,
+                            'name': ticker_info.get(ticker, '-'),
+                            'score': top_scores[ticker],
+                            'weight': actual_amount / capital,
+                            'price': price,
+                            'lots': lots,  # 可能是小數（如 0.5 張）
+                            'shares': shares,  # 實際股數（可能是零股）
+                            'amount': actual_amount,
+                        })
+            else:
+                # 原有邏輯：只買整張
+                # 計算張數 (取整)
+                lots = int(target_amount / (price * lot_size))
+                lots = max(lots, 0)  # 至少 0 張
+                
+                # 如果張數不足最小張數但權重夠高，至少買一張
+                if lots == 0 and weight >= min_weight and (price * lot_size) <= target_amount * 1.5:
+                    lots = min_lots
+                
+                if lots > 0:
+                    shares = lots * lot_size
+                    actual_amount = shares * price
+                    
+                    if total_allocated + actual_amount <= capital:
+                        total_allocated += actual_amount
+                        
+                        allocations.append({
+                            'ticker': ticker,
+                            'name': ticker_info.get(ticker, '-'),
+                            'score': top_scores[ticker],
+                            'weight': actual_amount / capital,
+                            'price': price,
+                            'lots': lots,
+                            'shares': shares,
+                            'amount': actual_amount,
+                        })
         
         # 建立 DataFrame
         alloc_df = pd.DataFrame(allocations)
