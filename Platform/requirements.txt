@@ -1,0 +1,30 @@
+# Requirements for Investment AI Platform
+# Install with: pip install -r requirements.txt
+
+# ============================================================================
+# Core Data Processing
+# ============================================================================
+pandas>=2.0.0          # Data manipulation and analysis
+numpy>=1.24.0          # Numerical computing
+
+# ============================================================================
+# Data Storage (Parquet file support)
+# ============================================================================
+pyarrow>=10.0.0       # Required for pandas to read/write parquet files
+
+# ============================================================================
+# Visualization (for performance plotting)
+# ============================================================================
+matplotlib>=3.7.0     # For plotting backtest performance charts
+
+# ============================================================================
+# Standard Library (no installation needed, listed for reference)
+# ============================================================================
+# json, os, sys, pathlib, datetime, typing, warnings, dataclasses, abc
+# glob, io, StringIO, importlib, argparse - All included in Python
+
+# ============================================================================
+# Optional Dependencies (for advanced features)
+# ============================================================================
+# scipy>=1.10.0       # For advanced statistical functions (optional)
+# scikit-learn>=1.3.0 # For machine learning features (optional)
