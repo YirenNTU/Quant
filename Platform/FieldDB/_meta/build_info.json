@@ -1,10 +1,10 @@
 {
-  "build_time": "2026-02-08T00:57:44.978053",
+  "build_time": "2026-02-09T19:29:16.677327",
   "source_dir": "/Users/yirenwu/Investment_AI/Stock_Pool/Database",
   "output_format": "parquet",
   "stats": {
-    "total_files": 107,
-    "success_files": 107,
+    "total_files": 93,
+    "success_files": 93,
     "failed_files": 0,
     "total_fields": 124,
     "build_time": null
