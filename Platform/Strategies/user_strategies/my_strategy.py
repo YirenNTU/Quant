@@ -276,119 +276,96 @@ class MyStrategy(Strategy):
         # =========================
         # 1) 取資料（全部都是 DB 確定存在的欄位）
         # =========================
-        close    = db.get("close")
-        high     = db.get("high")
-        volume   = db.get("volume")
-        turnover = db.get("turnover")
-
-        monthly_rev_yoy = db.get("monthly_rev_yoy")
-        monthly_rev_mom = db.get("monthly_rev_mom")
-
-        tej_opm  = db.get("tej_opm")
-        tej_gpm  = db.get("tej_gpm")
-
-        sa_ni_yoy  = db.get("sa_ni_yoy")      # ✅ 有這個欄位（自結稅後淨利 YoY）
-        sa_opi_yoy = db.get("sa_opi_yoy")     # ✅ 有（自結營業利益 YoY）— 可用來加強「爆發」
-
-        qfii_net = db.get("qfii_net")
+        close = db.get("close")
+        pb = db.get("pb")
+        daily_return = db.get("daily_return")
         fund_net = db.get("fund_net")
-        qfii_pct = db.get("qfii_pct")
-        fund_pct = db.get("fund_pct")
+        shares = db.get("shares")
+        amount = db.get("amount")
+        tej_opm = db.get("tej_opm")  # 可用來做 value-trap 防呆（很輕量）
 
         industry = load_sector(close, "industry")
+        sector = load_sector(close, "sector")
 
-        # =========================
-        # 2) 趨勢濾網（多頭做強者）
-        # =========================
-        ma20 = ts_mean(close, 20)
-        ma60 = ts_mean(close, 60)
-        trend_ok = (close > ma60) & (ma20 > ma60)
+        # ===== 參數 =====
+        vw = self.params.get("value_weight", 0.4)
+        gw = self.params.get("growth_weight", 0.4)   # momentum 權重
+        cw = self.params.get("chip_weight", 0.2)
+        ma_n = self.params.get("ma_filter", 60)
 
-        # =========================
-        # 3) Momentum + Breakout（抓主升段）
-        # =========================
-        mom20 = ts_pct_change(close, 20)
-        mom60 = ts_pct_change(close, 60)
-        mom_score = 0.55 * rank(mom20, industry) + 0.45 * rank(mom60, industry)
+        # ===== 小工具：縮尾 =====
+        def w(x):
+            return winsorize(x, 0.01, 0.99)
 
-        hh120 = ts_max(high, 120)
-        breakout_pos = safe_divide(close, hh120, fill=0)   # 越接近1越像突破段
-        breakout_score = rank(winsorize(breakout_pos, 0.01, 0.99), industry)
+        # =========================================================
+        # 1) Value：PB 越低越好（產業內）
+        #    加一個超輕量 value-trap 防呆：tej_opm<=0 時 value 打折
+        # =========================================================
+        value = 1 - rank(w(pb), industry)
 
-        # =========================
-        # 4) 量能確認
-        # =========================
-        vol20 = ts_mean(volume, 20)
-        vol_surge = safe_divide(volume, vol20, fill=0)
-        vol_score = rank(winsorize(ts_mean(vol_surge, 5), 0.01, 0.99), industry)
+        # 若 tej_opm 缺值，視為「不阻擋」（避免資料不全害你少買很多）
+        quality_gate = tej_opm.isna() | (tej_opm > 0)
+        value = if_else(quality_gate, value, value * 0.5)
 
-        turnover_score = rank(winsorize(ts_mean(turnover, 10), 0.01, 0.99), industry)
+        # =========================================================
+        # 2) Momentum：120日報酬 越高越好（產業內）
+        # =========================================================
+        mom = rank(w(ts_pct_change(close, 120)), industry)
 
-        # =========================
-        # 5) 基本面加速（爆發核心）
-        # =========================
-        # 月營收 YoY + MoM：加速 & 級別
-        rev_yoy_score = rank(winsorize(ts_mean(zscore(monthly_rev_yoy, industry), 3), 0.01, 0.99), industry)
-        rev_mom_score = rank(winsorize(ts_mean(zscore(monthly_rev_mom, industry), 3), 0.01, 0.99), industry)
+        # =========================================================
+        # 3) Chip：投信近10日淨買超（先尺度修正，再做產業內）
+        #    fund_net(張) -> *1000 股，再除以 shares(股)
+        # =========================================================
+        fund_flow = safe_divide(fund_net * 1000, shares, fill=0)
+        chip = rank(w(ts_sum(fund_flow, 10)), industry)
+        chip_2 = rank(ts_zscore(ts_mean(fund_flow, 10),120), industry)
 
-        # 自結獲利 YoY（取 sa_ni_yoy 為主，sa_opi_yoy 為輔）
-        ni_yoy_score  = rank(winsorize(ts_mean(zscore(sa_ni_yoy, industry), 3), 0.01, 0.99), industry)
-        opi_yoy_score = rank(winsorize(ts_mean(zscore(sa_opi_yoy, industry), 3), 0.01, 0.99), industry)
-        profit_accel_score = 0.65 * ni_yoy_score + 0.35 * opi_yoy_score
+        # =========================================================
+        # 4) 趨勢濾網：跌破 MA_n 就降曝險
+        # =========================================================
+        trend_ok = close > ts_mean(close, ma_n)
 
-        # 利潤率改善（抓「變好」不是抓「很高」）
-        opm_imp = ts_delta(tej_opm, 4)
-        gpm_imp = ts_delta(tej_gpm, 4)
-        margin_imp_score = 0.6 * rank(winsorize(zscore(opm_imp, industry), 0.01, 0.99), industry) + \
-                        0.4 * rank(winsorize(zscore(gpm_imp, industry), 0.01, 0.99), industry)
+        # =========================================================
+        # 5) 波動折扣：高波動扣分（產業內反向）
+        # =========================================================
+        vol = w(ts_std(daily_return, 60))
+        vol_score = 1 - rank(vol, sector)         # 越穩越高
+        risk_mult = 0.6 + 0.4 * vol_score           # 0.6 ~ 1.0（比上一版稍微更保守）
 
-        fundamentals_score = (
-            0.28 * rev_yoy_score +
-            0.22 * rev_mom_score +
-            0.4 * profit_accel_score +
-            0.1 * margin_imp_score
-        )
+        # =========================================================
+        # 6) 輕量流動性折扣：避免實盤滑價
+        # =========================================================
+        liq = rank(w(ts_mean(amount, 20)), industry)
+        liq_mult = 0.8 + 0.2 * liq                  # 0.8 ~ 1.0
 
-        # =========================
-        # 6) 籌碼確認（外資/投信推升）
-        # =========================
-        inst_net20 = ts_sum(qfii_net + fund_net, 20)
-        inst_score = rank(winsorize(inst_net20, 0.01, 0.99), industry)
+        # =========================================================
+        # 7) 市場風險濾網（關鍵）：市場 < MA200 → 全體打折
+        #    用全市場平均 close 當 proxy（不需要額外資料）
+        # =========================================================
+        market = close.mean(axis=1)                 # Series: 每日市場代理
+        market_ok = market > market.rolling(200).mean()
+        market_ok_df = (close * 0).add(market_ok.astype(float), axis=0)  # broadcast 到所有股票
+        market_mult = 0.5 + 0.5 * market_ok_df      # 好=1.0，壞=0.5
 
-        hold_up = ts_delta(qfii_pct + fund_pct, 20)
-        hold_score = rank(winsorize(hold_up, 0.01, 0.99), industry)
+        # =========================================================
+        # 8) 合成 core
+        # =========================================================
+        core = vw * value + gw * mom + cw * chip
 
-        chip_score = 0.65 * inst_score + 0.35 * hold_score
+        total = core * risk_mult * liq_mult * market_mult
 
-        # =========================
-        # 7) 風控：波動懲罰 + 過熱抑制
-        # =========================
-        volat20 = volatility(close, 20)
-        vol_penalty = rank(winsorize(volat20, 0.01, 0.99), industry)
+        # =========================================================
+        # 9) 急跌保護：20日跌幅 < -15% → 直接 0（砍尖刺 DD）
+        # =========================================================
+        crash = ts_pct_change(close, 20) < -0.10
+        total = if_else(crash, 0, total)
 
-        rsi14 = rsi(close, 14)
-        overheat = (rsi14 > 80).astype(float)
-        overheat_penalty = 0.20 * overheat
+        # =========================================================
+        # 10) 降換手：對分數做 EMA 平滑（不加參數，用 5 天）
+        # =========================================================
+        total = decay_exp(total, 10)
 
-        # =========================
-        # 8) 組合（Growth Breakout）
-        # =========================
-        raw_score = (
-            0.08 * mom_score +
-            0.12 * breakout_score +
-            0.16 * vol_score +
-            0.08 * turnover_score +
-            0.32 * fundamentals_score +
-            0.16 * chip_score +
-            - 0.16 * vol_penalty
-            - overheat_penalty
-        )
-
-        score = if_else(trend_ok, 1.25*raw_score, raw_score * 0.35)
-        score = winsorize(score, 0.01, 0.99)
-        score = ts_mean(zscore(score, industry), 3)
-
-        return score
+        return total.fillna(0)
             
     # =========================================================================
     # 選擇性方法: filter_universe() - 篩選投資範圍
@@ -464,7 +441,7 @@ if __name__ == '__main__':
     allocation = get_allocation(
         strategy=strategy,
         capital=1_000_000,             # 可用資金
-        max_positions=10,              # 最大持倉數
+        max_positions=20,              # 最大持倉數
     )
     
     print(allocation)
