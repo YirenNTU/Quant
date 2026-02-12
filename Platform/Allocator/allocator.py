@@ -195,7 +195,15 @@ class Allocator:
             weights = pd.Series(1.0 / len(weights), index=weights.index)
         
         # 如果有太多股票權重過低，先篩選
+        weights_before_filter = weights.copy()
         weights = weights[weights >= min_weight / 2]
+        
+        if len(weights) == 0 and len(weights_before_filter) > 0:
+            # 使用更寬鬆的閾值
+            weights = weights_before_filter[weights_before_filter >= min_weight / 10]
+            if len(weights) == 0:
+                weights = weights_before_filter
+        
         if len(weights) == 0:
             if len(top_scores_standardized) > 0:
                 weights = pd.Series(1.0 / len(top_scores_standardized), index=top_scores_standardized.index)
@@ -211,7 +219,12 @@ class Allocator:
         
         # 限制權重範圍
         weights = weights.clip(lower=min_weight, upper=max_weight)
-        weights = weights / weights.sum()
+        weight_sum_after_clip = weights.sum()
+        
+        if weight_sum_after_clip > 0:
+            weights = weights / weight_sum_after_clip
+        else:
+            weights = pd.Series(1.0 / len(weights), index=weights.index)
         
         # 計算配置
         allocations = []

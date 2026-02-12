@@ -357,13 +357,31 @@ class MyStrategy(Strategy):
         # =========================================================
         # 9) 急跌保護：20日跌幅 < -15% → 直接 0（砍尖刺 DD）
         # =========================================================
-        crash = ts_pct_change(close, 20) < -0.10
+        crash = ts_pct_change(close, 20) < -0.50
         total = if_else(crash, 0, total)
 
         # =========================================================
         # 10) 降換手：對分數做 EMA 平滑（不加參數，用 5 天）
         # =========================================================
-        total = decay_exp(total, 10)
+        total = decay_exp(total, 20)
+
+        # =========================================================
+        # 11) 最終標準化：確保分數在合理範圍內（避免異常巨大的值）
+        #     使用截面 Z-score 標準化，然後縮放到 0-1 範圍
+        # =========================================================
+        # 對每一行（日期）進行截面標準化
+        total_mean = total.mean(axis=1)
+        total_std = total.std(axis=1)
+        # 避免除零
+        total_std = total_std.replace(0, 1)
+        total_normalized = total.sub(total_mean, axis=0).div(total_std, axis=0)
+        
+        # 縮放到 0-1 範圍（使用 min-max）
+        total_min = total_normalized.min(axis=1)
+        total_max = total_normalized.max(axis=1)
+        total_range = total_max - total_min
+        total_range = total_range.replace(0, 1)  # 避免除零
+        total = total_normalized.sub(total_min, axis=0).div(total_range, axis=0)
 
         return total.fillna(0)
             
@@ -410,8 +428,8 @@ if __name__ == '__main__':
     print(f"📊 執行策略: {MyStrategy.name}")
     print("=" * 70)
     
-    # 建立策略實例
-    strategy = MyStrategy()
+    # 建立策略實例 (top_n=10: 回測與配置均持倉 10 檔)
+    strategy = MyStrategy(top_n=10)
     
     # =========================================================================
     # 1. 執行回測
@@ -422,8 +440,9 @@ if __name__ == '__main__':
         strategy=strategy,
         start_date="2022-02-07",      # 開始日期 (4年回測)
         end_date=None,                 # 結束日期 (None = 最新)
-        initial_capital=1_000_000,     # 初始資金
+        initial_capital=200_000,     # 初始資金
         rebalance_freq="weekly",       # 調倉頻率: daily, weekly, monthly
+        allow_fractional=True,         # 啟用零股交易（與 allocation 一致）
     )
     
     # 顯示回測結果
@@ -440,8 +459,9 @@ if __name__ == '__main__':
     
     allocation = get_allocation(
         strategy=strategy,
-        capital=1_000_000,             # 可用資金
-        max_positions=20,              # 最大持倉數
+        capital=200_000,             # 可用資金
+        max_positions=10,              # 最大持倉數 (與 top_n 一致)
+        allow_fractional=True,         # 啟用零股交易（高價股 1 張可能超過分配金額）
     )
     
     print(allocation)
