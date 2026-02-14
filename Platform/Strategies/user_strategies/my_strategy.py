@@ -441,7 +441,7 @@ if __name__ == '__main__':
         start_date="2022-02-07",      # 開始日期 (4年回測)
         end_date=None,                 # 結束日期 (None = 最新)
         initial_capital=200_000,     # 初始資金
-        rebalance_freq="weekly",       # 調倉頻率: daily, weekly, monthly
+        rebalance_freq="monthly",       # 調倉頻率: daily, weekly, monthly
         allow_fractional=True,         # 啟用零股交易（與 allocation 一致）
     )
     

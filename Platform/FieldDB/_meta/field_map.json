@@ -5,13 +5,13 @@
     "description": "開盤價",
     "shape": [
       976,
-      91
+      120
     ],
     "date_range": [
       "2022-02-14 00:00:00",
       "2026-02-11 00:00:00"
     ],
-    "tickers": 91
+    "tickers": 120
   },
   "high": {
     "category": "price",
@@ -19,13 +19,13 @@
     "description": "最高價",
     "shape": [
       976,
-      91
+      120
     ],
     "date_range": [
       "2022-02-14 00:00:00",
       "2026-02-11 00:00:00"
     ],
-    "tickers": 91
+    "tickers": 120
   },
   "low": {
     "category": "price",
@@ -33,13 +33,13 @@
     "description": "最低價",
     "shape": [
       976,
-      91
+      120
     ],
     "date_range": [
       "2022-02-14 00:00:00",
       "2026-02-11 00:00:00"
     ],
-    "tickers": 91
+    "tickers": 120
   },
   "close": {
     "category": "price",
@@ -47,13 +47,13 @@
     "description": "收盤價",
     "shape": [
       976,
-      91
+      120
     ],
     "date_range": [
       "2022-02-14 00:00:00",
       "2026-02-11 00:00:00"
     ],
-    "tickers": 91
+    "tickers": 120
   },
   "adjfac": {
     "category": "price",
@@ -61,13 +61,13 @@
     "description": "還原因子",
     "shape": [
       976,
-      91
+      120
     ],
     "date_range": [
       "2022-02-14 00:00:00",
       "2026-02-11 00:00:00"
     ],
-    "tickers": 91
+    "tickers": 120
   },
   "volume": {
     "category": "price",
@@ -75,13 +75,13 @@
     "description": "成交量(股)",
     "shape": [
       976,
-      91
+      120
     ],
     "date_range": [
       "2022-02-14 00:00:00",
       "2026-02-11 00:00:00"
     ],
-    "tickers": 91
+    "tickers": 120
   },
   "amount": {
     "category": "price",
@@ -89,13 +89,13 @@
     "description": "成交金額",
     "shape": [
       976,
-      91
+      120
     ],
     "date_range": [
       "2022-02-14 00:00:00",
       "2026-02-11 00:00:00"
     ],
-    "tickers": 91
+    "tickers": 120
   },
   "trades": {
     "category": "price",
@@ -103,13 +103,13 @@
     "description": "成交筆數",
     "shape": [
       976,
-      91
+      120
     ],
     "date_range": [
       "2022-02-14 00:00:00",
       "2026-02-11 00:00:00"
     ],
-    "tickers": 91
+    "tickers": 120
   },
   "avgprc": {
     "category": "price",
@@ -117,13 +117,13 @@
     "description": "均價",
     "shape": [
       976,
-      91
+      120
     ],
     "date_range": [
       "2022-02-14 00:00:00",
       "2026-02-11 00:00:00"
     ],
-    "tickers": 91
+    "tickers": 120
   },
   "turnover": {
     "category": "price",
@@ -131,13 +131,13 @@
     "description": "週轉率%",
     "shape": [
       976,
-      91
+      120
     ],
     "date_range": [
       "2022-02-14 00:00:00",
       "2026-02-11 00:00:00"
     ],
-    "tickers": 91
+    "tickers": 120
   },
   "mktcap": {
     "category": "price",
@@ -145,13 +145,13 @@
     "description": "市值",
     "shape": [
       976,
-      91
+      120
     ],
     "date_range": [
       "2022-02-14 00:00:00",
       "2026-02-11 00:00:00"
     ],
-    "tickers": 91
+    "tickers": 120
   },
   "shares": {
     "category": "price",
@@ -159,13 +159,13 @@
     "description": "流通股數",
     "shape": [
       976,
-      91
+      120
     ],
     "date_range": [
       "2022-02-14 00:00:00",
       "2026-02-11 00:00:00"
     ],
-    "tickers": 91
+    "tickers": 120
   },
   "pe": {
     "category": "price",
@@ -173,13 +173,13 @@
     "description": "本益比",
     "shape": [
       976,
-      91
+      120
     ],
     "date_range": [
       "2022-02-14 00:00:00",
       "2026-02-11 00:00:00"
     ],
-    "tickers": 91
+    "tickers": 120
   },
   "pb": {
     "category": "price",
@@ -187,13 +187,13 @@
     "description": "股價淨值比",
     "shape": [
       976,
-      91
+      120
     ],
     "date_range": [
       "2022-02-14 00:00:00",
       "2026-02-11 00:00:00"
     ],
-    "tickers": 91
+    "tickers": 120
   },
   "psr": {
     "category": "price",
@@ -201,13 +201,13 @@
     "description": "股價營收比",
     "shape": [
       976,
-      91
+      120
     ],
     "date_range": [
       "2022-02-14 00:00:00",
       "2026-02-11 00:00:00"
     ],
-    "tickers": 91
+    "tickers": 120
   },
   "pe_tej": {
     "category": "price",
@@ -215,13 +215,13 @@
     "description": "PE(TEJ)",
     "shape": [
       976,
-      91
+      120
     ],
     "date_range": [
       "2022-02-14 00:00:00",
       "2026-02-11 00:00:00"
     ],
-    "tickers": 91
+    "tickers": 120
   },
   "pb_tej": {
     "category": "price",
@@ -229,13 +229,13 @@
     "description": "PB(TEJ)",
     "shape": [
       976,
-      91
+      120
     ],
     "date_range": [
       "2022-02-14 00:00:00",
       "2026-02-11 00:00:00"
     ],
-    "tickers": 91
+    "tickers": 120
   },
   "div_yield": {
     "category": "price",
@@ -243,13 +243,13 @@
     "description": "殖利率%",
     "shape": [
       976,
-      91
+      120
     ],
     "date_range": [
       "2022-02-14 00:00:00",
       "2026-02-11 00:00:00"
     ],
-    "tickers": 91
+    "tickers": 120
   },
   "cdiv_yield": {
     "category": "price",
@@ -257,13 +257,13 @@
     "description": "現金殖利率%",
     "shape": [
       976,
-      91
+      120
     ],
     "date_range": [
       "2022-02-14 00:00:00",
       "2026-02-11 00:00:00"
     ],
-    "tickers": 91
+    "tickers": 120
   },
   "daily_return": {
     "category": "price",
@@ -271,13 +271,13 @@
     "description": "日報酬率%",
     "shape": [
       976,
-      91
+      120
     ],
     "date_range": [
       "2022-02-14 00:00:00",
       "2026-02-11 00:00:00"
     ],
-    "tickers": 91
+    "tickers": 120
   },
   "amplitude": {
     "category": "price",
@@ -285,13 +285,13 @@
     "description": "振幅%",
     "shape": [
       976,
-      91
+      120
     ],
     "date_range": [
       "2022-02-14 00:00:00",
       "2026-02-11 00:00:00"
     ],
-    "tickers": 91
+    "tickers": 120
   },
   "revenue": {
     "category": "financials",
@@ -299,13 +299,13 @@
     "description": "營業收入",
     "shape": [
       20,
-      91
+      120
     ],
     "date_range": [
       "2021-03-01 00:00:00",
       "2025-12-01 00:00:00"
     ],
-    "tickers": 91
+    "tickers": 120
   },
   "gross_profit": {
     "category": "financials",
@@ -313,13 +313,13 @@
     "description": "毛利",
     "shape": [
       20,
-      91
+      120
     ],
     "date_range": [
       "2021-03-01 00:00:00",
       "2025-12-01 00:00:00"
     ],
-    "tickers": 91
+    "tickers": 120
   },
   "net_income": {
     "category": "financials",
@@ -327,13 +327,13 @@
     "description": "稅後淨利",
     "shape": [
       20,
-      91
+      120
     ],
     "date_range": [
       "2021-03-01 00:00:00",
       "2025-12-01 00:00:00"
     ],
-    "tickers": 91
+    "tickers": 120
   },
   "tej_gpm": {
     "category": "financials",
@@ -341,13 +341,13 @@
     "description": "毛利率%",
     "shape": [
       20,
-      91
+      120
     ],
     "date_range": [
       "2021-03-01 00:00:00",
       "2025-12-01 00:00:00"
     ],
-    "tickers": 91
+    "tickers": 120
   },
   "tej_opm": {
     "category": "financials",
@@ -355,13 +355,13 @@
     "description": "營益率%",
     "shape": [
       20,
-      91
+      120
     ],
     "date_range": [
       "2021-03-01 00:00:00",
       "2025-12-01 00:00:00"
     ],
-    "tickers": 91
+    "tickers": 120
   },
   "inventory_turnover": {
     "category": "financials",
@@ -369,13 +369,13 @@
     "description": "存貨週轉率",
     "shape": [
       20,
-      91
+      120
     ],
     "date_range": [
       "2021-03-01 00:00:00",
       "2025-12-01 00:00:00"
     ],
-    "tickers": 91
+    "tickers": 120
   },
   "inventory_days": {
     "category": "financials",
@@ -383,13 +383,13 @@
     "description": "存貨天數",
     "shape": [
       20,
-      91
+      120
     ],
     "date_range": [
       "2021-03-01 00:00:00",
       "2025-12-01 00:00:00"
     ],
-    "tickers": 91
+    "tickers": 120
   },
   "dso": {
     "category": "financials",
@@ -397,13 +397,13 @@
     "description": "應收帳款天數",
     "shape": [
       20,
-      91
+      120
     ],
     "date_range": [
       "2021-03-01 00:00:00",
       "2025-12-01 00:00:00"
     ],
-    "tickers": 91
+    "tickers": 120
   },
   "days_payable": {
     "category": "financials",
@@ -411,13 +411,13 @@
     "description": "應付帳款天數",
     "shape": [
       20,
-      91
+      120
     ],
     "date_range": [
       "2021-03-01 00:00:00",
       "2025-12-01 00:00:00"
     ],
-    "tickers": 91
+    "tickers": 120
   },
   "total_assets": {
     "category": "balance_sheet",
@@ -425,13 +425,13 @@
     "description": "資產總額",
     "shape": [
       20,
-      91
+      120
     ],
     "date_range": [
       "2021-03-01 00:00:00",
       "2025-12-01 00:00:00"
     ],
-    "tickers": 91
+    "tickers": 120
   },
   "total_debt": {
     "category": "balance_sheet",
@@ -439,13 +439,13 @@
     "description": "負債總額",
     "shape": [
       20,
-      91
+      120
     ],
     "date_range": [
       "2021-03-01 00:00:00",
       "2025-12-01 00:00:00"
     ],
-    "tickers": 91
+    "tickers": 120
   },
   "total_liabilities": {
     "category": "balance_sheet",
@@ -453,13 +453,13 @@
     "description": "總負債",
     "shape": [
       20,
-      91
+      120
     ],
     "date_range": [
       "2021-03-01 00:00:00",
       "2025-12-01 00:00:00"
     ],
-    "tickers": 91
+    "tickers": 120
   },
   "current_assets": {
     "category": "balance_sheet",
@@ -467,13 +467,13 @@
     "description": "流動資產",
     "shape": [
       20,
-      91
+      120
     ],
     "date_range": [
       "2021-03-01 00:00:00",
       "2025-12-01 00:00:00"
     ],
-    "tickers": 91
+    "tickers": 120
   },
   "accounts_receivable": {
     "category": "balance_sheet",
@@ -481,13 +481,13 @@
     "description": "應收帳款",
     "shape": [
       20,
-      91
+      120
     ],
     "date_range": [
       "2021-03-01 00:00:00",
       "2025-12-01 00:00:00"
     ],
-    "tickers": 91
+    "tickers": 120
   },
   "ocf": {
     "category": "cashflow",
@@ -495,13 +495,13 @@
     "description": "營業現金流",
     "shape": [
       20,
-      91
+      120
     ],
     "date_range": [
       "2021-03-01 00:00:00",
       "2025-12-01 00:00:00"
     ],
-    "tickers": 91
+    "tickers": 120
   },
   "qfii_net": {
     "category": "chip",
@@ -509,13 +509,13 @@
     "description": "外資買賣超(張)",
     "shape": [
       976,
-      91
+      120
     ],
     "date_range": [
       "2022-02-14 00:00:00",
       "2026-02-11 00:00:00"
     ],
-    "tickers": 91
+    "tickers": 120
   },
   "fund_net": {
     "category": "chip",
@@ -523,13 +523,13 @@
     "description": "投信買賣超(張)",
     "shape": [
       976,
-      91
+      120
     ],
     "date_range": [
       "2022-02-14 00:00:00",
       "2026-02-11 00:00:00"
     ],
-    "tickers": 91
+    "tickers": 120
   },
   "dealer_net": {
     "category": "chip",
@@ -537,13 +537,13 @@
     "description": "三大法人合計",
     "shape": [
       976,
-      91
+      120
     ],
     "date_range": [
       "2022-02-14 00:00:00",
       "2026-02-11 00:00:00"
     ],
-    "tickers": 91
+    "tickers": 120
   },
   "qfii_pct": {
     "category": "chip",
@@ -551,13 +551,13 @@
     "description": "外資持股%",
     "shape": [
       976,
-      91
+      120
     ],
     "date_range": [
       "2022-02-14 00:00:00",
       "2026-02-11 00:00:00"
     ],
-    "tickers": 91
+    "tickers": 120
   },
   "fund_pct": {
     "category": "chip",
@@ -565,13 +565,13 @@
     "description": "投信持股%",
     "shape": [
       976,
-      91
+      120
     ],
     "date_range": [
       "2022-02-14 00:00:00",
       "2026-02-11 00:00:00"
     ],
-    "tickers": 91
+    "tickers": 120
   },
   "dealer_pct": {
     "category": "chip",
@@ -579,13 +579,13 @@
     "description": "自營商持股%",
     "shape": [
       976,
-      91
+      120
     ],
     "date_range": [
       "2022-02-14 00:00:00",
       "2026-02-11 00:00:00"
     ],
-    "tickers": 91
+    "tickers": 120
   },
   "margin_long": {
     "category": "chip",
@@ -593,13 +593,13 @@
     "description": "融資餘額(張)",
     "shape": [
       976,
-      91
+      120
     ],
     "date_range": [
       "2022-02-14 00:00:00",
       "2026-02-11 00:00:00"
     ],
-    "tickers": 91
+    "tickers": 120
   },
   "margin_short": {
     "category": "chip",
@@ -607,13 +607,13 @@
     "description": "融券餘額(張)",
     "shape": [
       976,
-      91
+      120
     ],
     "date_range": [
       "2022-02-14 00:00:00",
       "2026-02-11 00:00:00"
     ],
-    "tickers": 91
+    "tickers": 120
   },
   "short_ratio": {
     "category": "chip",
@@ -621,13 +621,13 @@
     "description": "券資比%",
     "shape": [
       976,
-      91
+      120
     ],
     "date_range": [
       "2022-02-14 00:00:00",
       "2026-02-11 00:00:00"
     ],
-    "tickers": 91
+    "tickers": 120
   },
   "monthly_rev": {
     "category": "monthly_sales",
@@ -635,13 +635,13 @@
     "description": "當月營收(千元)",
     "shape": [
       48,
-      91
+      120
     ],
     "date_range": [
       "2022-02-01 00:00:00",
       "2026-01-01 00:00:00"
     ],
-    "tickers": 91
+    "tickers": 120
   },
   "monthly_rev_alt": {
     "category": "monthly_sales",
@@ -649,13 +649,13 @@
     "description": "月營收(千元)",
     "shape": [
       48,
-      91
+      120
     ],
     "date_range": [
       "2022-02-01 00:00:00",
       "2026-01-01 00:00:00"
     ],
-    "tickers": 91
+    "tickers": 120
   },
   "monthly_rev_yoy": {
     "category": "monthly_sales",
@@ -663,13 +663,13 @@
     "description": "月營收YoY%",
     "shape": [
       48,
-      91
+      120
     ],
     "date_range": [
       "2022-02-01 00:00:00",
       "2026-01-01 00:00:00"
     ],
-    "tickers": 91
+    "tickers": 120
   },
   "monthly_rev_mom": {
     "category": "monthly_sales",
@@ -677,13 +677,13 @@
     "description": "月營收MoM%",
     "shape": [
       48,
-      91
+      120
     ],
     "date_range": [
       "2022-02-01 00:00:00",
       "2026-01-01 00:00:00"
     ],
-    "tickers": 91
+    "tickers": 120
   },
   "ytd_rev": {
     "category": "monthly_sales",
@@ -691,13 +691,13 @@
     "description": "累計營收(千元)",
     "shape": [
       48,
-      91
+      120
     ],
     "date_range": [
       "2022-02-01 00:00:00",
       "2026-01-01 00:00:00"
     ],
-    "tickers": 91
+    "tickers": 120
   },
   "ytd_rev_yoy": {
     "category": "monthly_sales",
@@ -705,13 +705,13 @@
     "description": "累計營收YoY%",
     "shape": [
       48,
-      91
+      120
     ],
     "date_range": [
       "2022-02-01 00:00:00",
       "2026-01-01 00:00:00"
     ],
-    "tickers": 91
+    "tickers": 120
   },
   "ytd_rev_yoy_pct": {
     "category": "monthly_sales",
@@ -719,265 +719,265 @@
     "description": "累計營收MoM%",
     "shape": [
       48,
-      91
+      120
     ],
     "date_range": [
       "2022-02-01 00:00:00",
       "2026-01-01 00:00:00"
     ],
-    "tickers": 91
+    "tickers": 120
   },
   "cash_div": {
     "category": "dividend",
     "source_column": "divc",
     "description": "現金股利",
     "shape": [
-      196,
-      90
+      216,
+      119
     ],
     "date_range": [
       "2021-01-28 00:00:00",
       "2026-02-10 00:00:00"
     ],
-    "tickers": 90
+    "tickers": 119
   },
   "stock_div": {
     "category": "dividend",
     "source_column": "divs",
     "description": "股票股利",
     "shape": [
-      196,
-      90
+      216,
+      119
     ],
     "date_range": [
       "2021-01-28 00:00:00",
       "2026-02-10 00:00:00"
     ],
-    "tickers": 90
+    "tickers": 119
   },
   "ern_div": {
     "category": "dividend",
     "source_column": "ern",
     "description": "盈餘配股",
     "shape": [
-      196,
-      90
+      216,
+      119
     ],
     "date_range": [
       "2021-01-28 00:00:00",
       "2026-02-10 00:00:00"
     ],
-    "tickers": 90
+    "tickers": 119
   },
   "cpl_div": {
     "category": "dividend",
     "source_column": "cpl",
     "description": "公積配股",
     "shape": [
-      196,
-      90
+      216,
+      119
     ],
     "date_range": [
       "2021-01-28 00:00:00",
       "2026-02-10 00:00:00"
     ],
-    "tickers": 90
+    "tickers": 119
   },
   "div_type": {
     "category": "dividend",
     "source_column": "distri_type",
     "description": "配息類型",
     "shape": [
-      196,
-      90
+      216,
+      119
     ],
     "date_range": [
       "2021-01-28 00:00:00",
       "2026-02-10 00:00:00"
     ],
-    "tickers": 90
+    "tickers": 119
   },
   "div_beg_date": {
     "category": "dividend",
     "source_column": "distri_beg",
     "description": "配息期間起日",
     "shape": [
-      196,
-      90
+      216,
+      119
     ],
     "date_range": [
       "2021-01-28 00:00:00",
       "2026-02-10 00:00:00"
     ],
-    "tickers": 90
+    "tickers": 119
   },
   "div_end_date": {
     "category": "dividend",
     "source_column": "distri_end",
     "description": "配息期間迄日",
     "shape": [
-      196,
-      90
+      216,
+      119
     ],
     "date_range": [
       "2021-01-28 00:00:00",
       "2026-02-10 00:00:00"
     ],
-    "tickers": 90
+    "tickers": 119
   },
   "div_year": {
     "category": "dividend",
     "source_column": "zyy",
     "description": "盈餘分派年度",
     "shape": [
-      196,
-      90
+      216,
+      119
     ],
     "date_range": [
       "2021-01-28 00:00:00",
       "2026-02-10 00:00:00"
     ],
-    "tickers": 90
+    "tickers": 119
   },
   "div_payment_times": {
     "category": "dividend",
     "source_column": "int_time",
     "description": "股利支付次數",
     "shape": [
-      196,
-      90
+      216,
+      119
     ],
     "date_range": [
       "2021-01-28 00:00:00",
       "2026-02-10 00:00:00"
     ],
-    "tickers": 90
+    "tickers": 119
   },
   "div_payout_ratio": {
     "category": "dividend",
     "source_column": "r16a",
     "description": "股利支付率%",
     "shape": [
-      196,
-      90
+      216,
+      119
     ],
     "date_range": [
       "2021-01-28 00:00:00",
       "2026-02-10 00:00:00"
     ],
-    "tickers": 90
+    "tickers": 119
   },
   "ex_div_date": {
     "category": "dividend",
     "source_column": "edexdate",
     "description": "除息日",
     "shape": [
-      196,
-      90
+      216,
+      119
     ],
     "date_range": [
       "2021-01-28 00:00:00",
       "2026-02-10 00:00:00"
     ],
-    "tickers": 90
+    "tickers": 119
   },
   "ex_right_date": {
     "category": "dividend",
     "source_column": "emexdate",
     "description": "除權日",
     "shape": [
-      196,
-      90
+      216,
+      119
     ],
     "date_range": [
       "2021-01-28 00:00:00",
       "2026-02-10 00:00:00"
     ],
-    "tickers": 90
+    "tickers": 119
   },
   "pay_date": {
     "category": "dividend",
     "source_column": "div_date",
     "description": "現金股利發放日",
     "shape": [
-      196,
-      90
+      216,
+      119
     ],
     "date_range": [
       "2021-01-28 00:00:00",
       "2026-02-10 00:00:00"
     ],
-    "tickers": 90
+    "tickers": 119
   },
   "stock_div_date": {
     "category": "dividend",
     "source_column": "d_issue2",
     "description": "股票股利發放日",
     "shape": [
-      196,
-      90
+      216,
+      119
     ],
     "date_range": [
       "2021-01-28 00:00:00",
       "2026-02-10 00:00:00"
     ],
-    "tickers": 90
+    "tickers": 119
   },
   "short_cover_date": {
     "category": "dividend",
     "source_column": "shortd",
     "description": "除權息最後回補日",
     "shape": [
-      196,
-      90
+      216,
+      119
     ],
     "date_range": [
       "2021-01-28 00:00:00",
       "2026-02-10 00:00:00"
     ],
-    "tickers": 90
+    "tickers": 119
   },
   "board_date": {
     "category": "dividend",
     "source_column": "dir_d",
     "description": "董事會日期",
     "shape": [
-      196,
-      90
+      216,
+      119
     ],
     "date_range": [
       "2021-01-28 00:00:00",
       "2026-02-10 00:00:00"
     ],
-    "tickers": 90
+    "tickers": 119
   },
   "shareholder_meeting_date": {
     "category": "dividend",
     "source_column": "mt_d",
     "description": "股東會日期",
     "shape": [
-      196,
-      90
+      216,
+      119
     ],
     "date_range": [
       "2021-01-28 00:00:00",
       "2026-02-10 00:00:00"
     ],
-    "tickers": 90
+    "tickers": 119
   },
   "div_currency": {
     "category": "dividend",
     "source_column": "currency",
     "description": "發放幣別",
     "shape": [
-      196,
-      90
+      216,
+      119
     ],
     "date_range": [
       "2021-01-28 00:00:00",
       "2026-02-10 00:00:00"
     ],
-    "tickers": 90
+    "tickers": 119
   },
   "sa_revenue": {
     "category": "self_announced",
@@ -985,13 +985,13 @@
     "description": "自結營收",
     "shape": [
       20,
-      91
+      120
     ],
     "date_range": [
       "2021-03-01 00:00:00",
       "2025-12-01 00:00:00"
     ],
-    "tickers": 91
+    "tickers": 120
   },
   "sa_gross_profit": {
     "category": "self_announced",
@@ -999,13 +999,13 @@
     "description": "自結營業毛利",
     "shape": [
       20,
-      91
+      120
     ],
     "date_range": [
       "2021-03-01 00:00:00",
       "2025-12-01 00:00:00"
     ],
-    "tickers": 91
+    "tickers": 120
   },
   "sa_opi": {
     "category": "self_announced",
@@ -1013,13 +1013,13 @@
     "description": "自結營業利益",
     "shape": [
       20,
-      91
+      120
     ],
     "date_range": [
       "2021-03-01 00:00:00",
       "2025-12-01 00:00:00"
     ],
-    "tickers": 91
+    "tickers": 120
   },
   "sa_pretax": {
     "category": "self_announced",
@@ -1027,13 +1027,13 @@
     "description": "自結稅前淨利",
     "shape": [
       20,
-      91
+      120
     ],
     "date_range": [
       "2021-03-01 00:00:00",
       "2025-12-01 00:00:00"
     ],
-    "tickers": 91
+    "tickers": 120
   },
   "sa_net_income": {
     "category": "self_announced",
@@ -1041,13 +1041,13 @@
     "description": "自結稅後淨利(合併總損益)",
     "shape": [
       20,
-      91
+      120
     ],
     "date_range": [
       "2021-03-01 00:00:00",
       "2025-12-01 00:00:00"
     ],
-    "tickers": 91
+    "tickers": 120
   },
   "sa_net_income_parent": {
     "category": "self_announced",
@@ -1055,13 +1055,13 @@
     "description": "自結稅後淨利(母公司)",
     "shape": [
       20,
-      91
+      120
     ],
     "date_range": [
       "2021-03-01 00:00:00",
       "2025-12-01 00:00:00"
     ],
-    "tickers": 91
+    "tickers": 120
   },
   "sa_eps": {
     "category": "self_announced",
@@ -1069,13 +1069,13 @@
     "description": "自結EPS",
     "shape": [
       20,
-      91
+      120
     ],
     "date_range": [
       "2021-03-01 00:00:00",
       "2025-12-01 00:00:00"
     ],
-    "tickers": 91
+    "tickers": 120
   },
   "sa_eps_pretax": {
     "category": "self_announced",
@@ -1083,13 +1083,13 @@
     "description": "自結每股稅前淨利",
     "shape": [
       20,
-      91
+      120
     ],
     "date_range": [
       "2021-03-01 00:00:00",
       "2025-12-01 00:00:00"
     ],
-    "tickers": 91
+    "tickers": 120
   },
   "sa_eps_net": {
     "category": "self_announced",
@@ -1097,13 +1097,13 @@
     "description": "自結每股稅後淨利",
     "shape": [
       20,
-      91
+      120
     ],
     "date_range": [
       "2021-03-01 00:00:00",
       "2025-12-01 00:00:00"
     ],
-    "tickers": 91
+    "tickers": 120
   },
   "sa_gpm": {
     "category": "self_announced",
@@ -1111,13 +1111,13 @@
     "description": "自結毛利率%",
     "shape": [
       20,
-      91
+      120
     ],
     "date_range": [
       "2021-03-01 00:00:00",
       "2025-12-01 00:00:00"
     ],
-    "tickers": 91
+    "tickers": 120
   },
   "sa_opm": {
     "category": "self_announced",
@@ -1125,13 +1125,13 @@
     "description": "自結營益率%",
     "shape": [
       20,
-      91
+      120
     ],
     "date_range": [
       "2021-03-01 00:00:00",
       "2025-12-01 00:00:00"
     ],
-    "tickers": 91
+    "tickers": 120
   },
   "sa_pretax_npm": {
     "category": "self_announced",
@@ -1139,13 +1139,13 @@
     "description": "自結稅前淨利率%",
     "shape": [
       20,
-      91
+      120
     ],
     "date_range": [
       "2021-03-01 00:00:00",
       "2025-12-01 00:00:00"
     ],
-    "tickers": 91
+    "tickers": 120
   },
   "sa_npm": {
     "category": "self_announced",
@@ -1153,13 +1153,13 @@
     "description": "自結稅後淨利率%",
     "shape": [
       20,
-      91
+      120
     ],
     "date_range": [
       "2021-03-01 00:00:00",
       "2025-12-01 00:00:00"
     ],
-    "tickers": 91
+    "tickers": 120
   },
   "sa_rev_yoy": {
     "category": "self_announced",
@@ -1167,13 +1167,13 @@
     "description": "自結營收成長率%",
     "shape": [
       20,
-      91
+      120
     ],
     "date_range": [
       "2021-03-01 00:00:00",
       "2025-12-01 00:00:00"
     ],
-    "tickers": 91
+    "tickers": 120
   },
   "sa_gm_yoy": {
     "category": "self_announced",
@@ -1181,13 +1181,13 @@
     "description": "自結營業毛利成長率%",
     "shape": [
       20,
-      91
+      120
     ],
     "date_range": [
       "2021-03-01 00:00:00",
       "2025-12-01 00:00:00"
     ],
-    "tickers": 91
+    "tickers": 120
   },
   "sa_opi_yoy": {
     "category": "self_announced",
@@ -1195,13 +1195,13 @@
     "description": "自結營業利益成長率%",
     "shape": [
       20,
-      91
+      120
     ],
     "date_range": [
       "2021-03-01 00:00:00",
       "2025-12-01 00:00:00"
     ],
-    "tickers": 91
+    "tickers": 120
   },
   "sa_pretax_yoy": {
     "category": "self_announced",
@@ -1209,13 +1209,13 @@
     "description": "自結稅前淨利成長率%",
     "shape": [
       20,
-      91
+      120
     ],
     "date_range": [
       "2021-03-01 00:00:00",
       "2025-12-01 00:00:00"
     ],
-    "tickers": 91
+    "tickers": 120
   },
   "sa_ni_yoy": {
     "category": "self_announced",
@@ -1223,125 +1223,125 @@
     "description": "自結稅後淨利成長率%",
     "shape": [
       20,
-      91
+      120
     ],
     "date_range": [
       "2021-03-01 00:00:00",
       "2025-12-01 00:00:00"
     ],
-    "tickers": 91
+    "tickers": 120
   },
   "capital_amt": {
     "category": "capital",
     "source_column": "stk_amt",
     "description": "股本(千元)",
     "shape": [
-      374,
-      61
+      491,
+      84
     ],
     "date_range": [
       "2021-01-06 00:00:00",
       "2026-02-04 00:00:00"
     ],
-    "tickers": 61
+    "tickers": 84
   },
   "shares_outstanding": {
     "category": "capital",
     "source_column": "slamt",
     "description": "流通股數(千股)",
     "shape": [
-      374,
-      61
+      491,
+      84
     ],
     "date_range": [
       "2021-01-06 00:00:00",
       "2026-02-04 00:00:00"
     ],
-    "tickers": 61
+    "tickers": 84
   },
   "cash_increase": {
     "category": "capital",
     "source_column": "cash",
     "description": "現金增資",
     "shape": [
-      374,
-      61
+      491,
+      84
     ],
     "date_range": [
       "2021-01-06 00:00:00",
       "2026-02-04 00:00:00"
     ],
-    "tickers": 61
+    "tickers": 84
   },
   "earning_increase": {
     "category": "capital",
     "source_column": "earning",
     "description": "盈餘轉增資",
     "shape": [
-      374,
-      61
+      491,
+      84
     ],
     "date_range": [
       "2021-01-06 00:00:00",
       "2026-02-04 00:00:00"
     ],
-    "tickers": 61
+    "tickers": 84
   },
   "capital_reserve": {
     "category": "capital",
     "source_column": "capital",
     "description": "資本公積",
     "shape": [
-      374,
-      61
+      491,
+      84
     ],
     "date_range": [
       "2021-01-06 00:00:00",
       "2026-02-04 00:00:00"
     ],
-    "tickers": 61
+    "tickers": 84
   },
   "employee_bonus": {
     "category": "capital",
     "source_column": "bonus",
     "description": "員工紅利",
     "shape": [
-      374,
-      61
+      491,
+      84
     ],
     "date_range": [
       "2021-01-06 00:00:00",
       "2026-02-04 00:00:00"
     ],
-    "tickers": 61
+    "tickers": 84
   },
   "capital_decrease": {
     "category": "capital",
     "source_column": "cap_dec",
     "description": "減資",
     "shape": [
-      374,
-      61
+      491,
+      84
     ],
     "date_range": [
       "2021-01-06 00:00:00",
       "2026-02-04 00:00:00"
     ],
-    "tickers": 61
+    "tickers": 84
   },
   "capital_change_date": {
     "category": "capital",
     "source_column": "x_cap_date",
     "description": "資本變更日期",
     "shape": [
-      374,
-      61
+      491,
+      84
     ],
     "date_range": [
       "2021-01-06 00:00:00",
       "2026-02-04 00:00:00"
     ],
-    "tickers": 61
+    "tickers": 84
   },
   "qfii_buy": {
     "category": "chip_extended",
@@ -1349,13 +1349,13 @@
     "description": "外資買進量(張)",
     "shape": [
       976,
-      91
+      120
     ],
     "date_range": [
       "2022-02-14 00:00:00",
       "2026-02-11 00:00:00"
     ],
-    "tickers": 91
+    "tickers": 120
   },
   "qfii_sell": {
     "category": "chip_extended",
@@ -1363,13 +1363,13 @@
     "description": "外資賣出量(張)",
     "shape": [
       976,
-      91
+      120
     ],
     "date_range": [
       "2022-02-14 00:00:00",
       "2026-02-11 00:00:00"
     ],
-    "tickers": 91
+    "tickers": 120
   },
   "fund_buy": {
     "category": "chip_extended",
@@ -1377,13 +1377,13 @@
     "description": "投信買進量(張)",
     "shape": [
       976,
-      91
+      120
     ],
     "date_range": [
       "2022-02-14 00:00:00",
       "2026-02-11 00:00:00"
     ],
-    "tickers": 91
+    "tickers": 120
   },
   "fund_sell": {
     "category": "chip_extended",
@@ -1391,13 +1391,13 @@
     "description": "投信賣出量(張)",
     "shape": [
       976,
-      91
+      120
     ],
     "date_range": [
       "2022-02-14 00:00:00",
       "2026-02-11 00:00:00"
     ],
-    "tickers": 91
+    "tickers": 120
   },
   "margin_maintenance": {
     "category": "chip_extended",
@@ -1405,13 +1405,13 @@
     "description": "融資維持率%",
     "shape": [
       976,
-      91
+      120
     ],
     "date_range": [
       "2022-02-14 00:00:00",
       "2026-02-11 00:00:00"
     ],
-    "tickers": 91
+    "tickers": 120
   },
   "short_maintenance": {
     "category": "chip_extended",
@@ -1419,13 +1419,13 @@
     "description": "融券維持率%",
     "shape": [
       976,
-      91
+      120
     ],
     "date_range": [
       "2022-02-14 00:00:00",
       "2026-02-11 00:00:00"
     ],
-    "tickers": 91
+    "tickers": 120
   },
   "total_maintenance": {
     "category": "chip_extended",
@@ -1433,13 +1433,13 @@
     "description": "整戶維持率%",
     "shape": [
       976,
-      91
+      120
     ],
     "date_range": [
       "2022-02-14 00:00:00",
       "2026-02-11 00:00:00"
     ],
-    "tickers": 91
+    "tickers": 120
   },
   "stock_lending": {
     "category": "chip_extended",
@@ -1447,13 +1447,13 @@
     "description": "借券餘額(張)",
     "shape": [
       976,
-      91
+      120
     ],
     "date_range": [
       "2022-02-14 00:00:00",
       "2026-02-11 00:00:00"
     ],
-    "tickers": 91
+    "tickers": 120
   },
   "fc_shares": {
     "category": "shareholding",
@@ -1461,13 +1461,13 @@
     "description": "集保庫存股數(千股)",
     "shape": [
       206,
-      90
+      119
     ],
     "date_range": [
       "2022-02-18 00:00:00",
       "2026-02-06 00:00:00"
     ],
-    "tickers": 90
+    "tickers": 119
   },
   "pledged_shares": {
     "category": "shareholding",
@@ -1475,13 +1475,13 @@
     "description": "設質股數(千股)",
     "shape": [
       206,
-      90
+      119
     ],
     "date_range": [
       "2022-02-18 00:00:00",
       "2026-02-06 00:00:00"
     ],
-    "tickers": 90
+    "tickers": 119
   },
   "shrm_u400": {
     "category": "shareholding",
@@ -1489,13 +1489,13 @@
     "description": "未滿400張集保人數",
     "shape": [
       206,
-      90
+      119
     ],
     "date_range": [
       "2022-02-18 00:00:00",
       "2026-02-06 00:00:00"
     ],
-    "tickers": 90
+    "tickers": 119
   },
   "shrs_u400": {
     "category": "shareholding",
@@ -1503,13 +1503,13 @@
     "description": "未滿400張集保張數(千股)",
     "shape": [
       206,
-      90
+      119
     ],
     "date_range": [
       "2022-02-18 00:00:00",
       "2026-02-06 00:00:00"
     ],
-    "tickers": 90
+    "tickers": 119
   },
   "shrp_u400": {
     "category": "shareholding",
@@ -1517,13 +1517,13 @@
     "description": "未滿400張集保占比%",
     "shape": [
       206,
-      90
+      119
     ],
     "date_range": [
       "2022-02-18 00:00:00",
       "2026-02-06 00:00:00"
     ],
-    "tickers": 90
+    "tickers": 119
   },
   "shrm_o400": {
     "category": "shareholding",
@@ -1531,13 +1531,13 @@
     "description": "超過400張集保人數",
     "shape": [
       206,
-      90
+      119
     ],
     "date_range": [
       "2022-02-18 00:00:00",
       "2026-02-06 00:00:00"
     ],
-    "tickers": 90
+    "tickers": 119
   },
   "shrs_o400": {
     "category": "shareholding",
@@ -1545,13 +1545,13 @@
     "description": "超過400張集保張數(千股)",
     "shape": [
       206,
-      90
+      119
     ],
     "date_range": [
       "2022-02-18 00:00:00",
       "2026-02-06 00:00:00"
     ],
-    "tickers": 90
+    "tickers": 119
   },
   "shrp_o400": {
     "category": "shareholding",
@@ -1559,13 +1559,13 @@
     "description": "超過400張集保占比%",
     "shape": [
       206,
-      90
+      119
     ],
     "date_range": [
       "2022-02-18 00:00:00",
       "2026-02-06 00:00:00"
     ],
-    "tickers": 90
+    "tickers": 119
   },
   "shrm_4_6": {
     "category": "shareholding",
@@ -1573,13 +1573,13 @@
     "description": "400-600張集保人數",
     "shape": [
       206,
-      90
+      119
     ],
     "date_range": [
       "2022-02-18 00:00:00",
       "2026-02-06 00:00:00"
     ],
-    "tickers": 90
+    "tickers": 119
   },
   "shrs_4_6": {
     "category": "shareholding",
@@ -1587,13 +1587,13 @@
     "description": "400-600張集保張數(千股)",
     "shape": [
       206,
-      90
+      119
     ],
     "date_range": [
       "2022-02-18 00:00:00",
       "2026-02-06 00:00:00"
     ],
-    "tickers": 90
+    "tickers": 119
   },
   "shrp_4_6": {
     "category": "shareholding",
@@ -1601,13 +1601,13 @@
     "description": "400-600張集保占比%",
     "shape": [
       206,
-      90
+      119
     ],
     "date_range": [
       "2022-02-18 00:00:00",
       "2026-02-06 00:00:00"
     ],
-    "tickers": 90
+    "tickers": 119
   },
   "shrm_6_8": {
     "category": "shareholding",
@@ -1615,13 +1615,13 @@
     "description": "600-800張集保人數",
     "shape": [
       206,
-      90
+      119
     ],
     "date_range": [
       "2022-02-18 00:00:00",
       "2026-02-06 00:00:00"
     ],
-    "tickers": 90
+    "tickers": 119
   },
   "shrs_6_8": {
     "category": "shareholding",
@@ -1629,13 +1629,13 @@
     "description": "600-800張集保張數(千股)",
     "shape": [
       206,
-      90
+      119
     ],
     "date_range": [
       "2022-02-18 00:00:00",
       "2026-02-06 00:00:00"
     ],
-    "tickers": 90
+    "tickers": 119
   },
   "shrp_6_8": {
     "category": "shareholding",
@@ -1643,13 +1643,13 @@
     "description": "600-800張集保占比%",
     "shape": [
       206,
-      90
+      119
     ],
     "date_range": [
       "2022-02-18 00:00:00",
       "2026-02-06 00:00:00"
     ],
-    "tickers": 90
+    "tickers": 119
   },
   "shrm_8_10": {
     "category": "shareholding",
@@ -1657,13 +1657,13 @@
     "description": "800-1000張集保人數",
     "shape": [
       206,
-      90
+      119
     ],
     "date_range": [
       "2022-02-18 00:00:00",
       "2026-02-06 00:00:00"
     ],
-    "tickers": 90
+    "tickers": 119
   },
   "shrs_8_10": {
     "category": "shareholding",
@@ -1671,13 +1671,13 @@
     "description": "800-1000張集保張數(千股)",
     "shape": [
       206,
-      90
+      119
     ],
     "date_range": [
       "2022-02-18 00:00:00",
       "2026-02-06 00:00:00"
     ],
-    "tickers": 90
+    "tickers": 119
   },
   "shrp_8_10": {
     "category": "shareholding",
@@ -1685,13 +1685,13 @@
     "description": "800-1000張集保占比%",
     "shape": [
       206,
-      90
+      119
     ],
     "date_range": [
       "2022-02-18 00:00:00",
       "2026-02-06 00:00:00"
     ],
-    "tickers": 90
+    "tickers": 119
   },
   "shrm_o1000": {
     "category": "shareholding",
@@ -1699,13 +1699,13 @@
     "description": "超過1000張集保人數",
     "shape": [
       206,
-      90
+      119
     ],
     "date_range": [
       "2022-02-18 00:00:00",
       "2026-02-06 00:00:00"
     ],
-    "tickers": 90
+    "tickers": 119
   },
   "shrs_o1000": {
     "category": "shareholding",
@@ -1713,13 +1713,13 @@
     "description": "超過1000張集保張數(千股)",
     "shape": [
       206,
-      90
+      119
     ],
     "date_range": [
       "2022-02-18 00:00:00",
       "2026-02-06 00:00:00"
     ],
-    "tickers": 90
+    "tickers": 119
   },
   "shrp_o1000": {
     "category": "shareholding",
@@ -1727,12 +1727,12 @@
     "description": "超過1000張集保占比%",
     "shape": [
       206,
-      90
+      119
     ],
     "date_range": [
       "2022-02-18 00:00:00",
       "2026-02-06 00:00:00"
     ],
-    "tickers": 90
+    "tickers": 119
   }
 }
