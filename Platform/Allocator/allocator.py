@@ -65,7 +65,7 @@ class AllocationResult:
             lots = row['lots']
             
             # 顯示張數（如果是零股則顯示小數）
-            lots_display = f"{lots:.2f}" if lots < 1 else f"{lots:.0f}"
+            lots_display = f"{lots:.3f}" if lots < 1 else f"{lots:.0f}"
             text += f"\n│{ticker:<8}│{name:<12}│{weight:>8.1f}│{price:>10,.0f}│{amount:>10,.0f}│{lots_display:>8}│"
         
         text += f"""
@@ -74,6 +74,8 @@ class AllocationResult:
 💵 總配置金額: ${self.summary['total_allocated']:,.0f}
 💰 剩餘現金:   ${self.summary['cash_remaining']:,.0f}
 📊 配置比例:   {self.summary['allocation_pct']*100:.1f}%
+
+💡 表列股價為最近收盤價，實際下單以次一交易日成交價為準（與回測隔日收盤價一致）
 
 ================================================================================
 """
@@ -97,6 +99,7 @@ class Allocator:
         max_positions: int = 10,
         max_weight: float = 0.15,
         min_weight: float = 0.03,
+        equal_weight: bool = True,
         lot_size: int = 1000,  # 一張 = 1000 股
         min_lots: int = 1,     # 最少買一張
         allow_fractional: bool = False,  # 是否允許零股交易
@@ -111,6 +114,7 @@ class Allocator:
             max_positions: 最大持倉數
             max_weight: 單一標的最大權重
             min_weight: 單一標的最小權重
+            equal_weight: True=等權重, False=按分數比例
             lot_size: 每張股數 (預設 1000)
             min_lots: 最少張數 (預設 1)
             allow_fractional: 是否允許零股交易 (預設 False)
@@ -165,48 +169,48 @@ class Allocator:
                 summary={'n_positions': 0, 'total_allocated': 0, 'cash_remaining': capital, 'allocation_pct': 0},
             )
         
-        # 🆕 先對所有有效分數進行標準化（Z-score）
-        score_mean = scores.mean()
-        score_std = scores.std()
-        if score_std > 0:
-            standardized_scores = (scores - score_mean) / score_std
+        # 取 top N
+        top_scores_original = scores.nlargest(top_n)
+        
+        if equal_weight:
+            weights = pd.Series(1.0 / len(top_scores_original), index=top_scores_original.index)
         else:
-            standardized_scores = scores
-        
-        # 然後取 top N（使用標準化後的分數）
-        top_scores_standardized = standardized_scores.nlargest(top_n)
-        
-        # 保存原始分數用於顯示（使用相同的 ticker index）
-        top_scores_original = scores[top_scores_standardized.index]
-        
-        # 計算權重（使用標準化後的分數進行 min-max 正規化）
-        score_min = top_scores_standardized.min()
-        score_range = top_scores_standardized.max() - score_min
-        if score_range > 0:
-            weights = (top_scores_standardized - score_min) / score_range
-        else:
-            weights = pd.Series(1.0, index=top_scores_standardized.index)
-        
-        # 正規化
-        weight_sum = weights.sum()
-        if weight_sum > 0:
-            weights = weights / weight_sum
-        else:
-            weights = pd.Series(1.0 / len(weights), index=weights.index)
-        
-        # 如果有太多股票權重過低，先篩選
-        weights_before_filter = weights.copy()
-        weights = weights[weights >= min_weight / 2]
-        
-        if len(weights) == 0 and len(weights_before_filter) > 0:
-            # 使用更寬鬆的閾值
-            weights = weights_before_filter[weights_before_filter >= min_weight / 10]
-            if len(weights) == 0:
-                weights = weights_before_filter
+            # Z-score 標準化
+            score_mean = scores.mean()
+            score_std = scores.std()
+            if score_std > 0:
+                standardized_scores = (scores - score_mean) / score_std
+            else:
+                standardized_scores = scores
+            
+            top_scores_standardized = standardized_scores[top_scores_original.index]
+            
+            # min-max 正規化
+            score_min = top_scores_standardized.min()
+            score_range = top_scores_standardized.max() - score_min
+            if score_range > 0:
+                weights = (top_scores_standardized - score_min) / score_range
+            else:
+                weights = pd.Series(1.0, index=top_scores_standardized.index)
+            
+            weight_sum = weights.sum()
+            if weight_sum > 0:
+                weights = weights / weight_sum
+            else:
+                weights = pd.Series(1.0 / len(weights), index=weights.index)
+            
+            # 篩掉權重過低的
+            weights_before_filter = weights.copy()
+            weights = weights[weights >= min_weight / 2]
+            
+            if len(weights) == 0 and len(weights_before_filter) > 0:
+                weights = weights_before_filter[weights_before_filter >= min_weight / 10]
+                if len(weights) == 0:
+                    weights = weights_before_filter
         
         if len(weights) == 0:
-            if len(top_scores_standardized) > 0:
-                weights = pd.Series(1.0 / len(top_scores_standardized), index=top_scores_standardized.index)
+            if len(top_scores_original) > 0:
+                weights = pd.Series(1.0 / len(top_scores_original), index=top_scores_original.index)
             else:
                 print("⚠️ 無法計算權重")
                 return AllocationResult(
@@ -236,11 +240,8 @@ class Allocator:
             target_amount = capital * weight
             
             if allow_fractional:
-                # 🆕 允許零股：直接計算股數，不取整到整張
-                shares = target_amount / price
-                shares = max(shares, 0)  # 至少 0 股
+                shares = int(target_amount / price)
                 
-                # 🆕 改進：如果權重 > 0 但股數太少，至少買 1 股（降低門檻）
                 if shares < 1 and weight > 0:
                     shares = 1
                 
@@ -262,11 +263,10 @@ class Allocator:
                             'amount': actual_amount,
                         })
                     elif len(allocations) == 0:
-                        # 🆕 如果還沒有任何配置且資金不足，至少配置這檔（使用剩餘資金）
                         remaining_capital = capital - total_allocated
                         if remaining_capital > 0:
-                            shares = remaining_capital / price
-                            if shares >= 1:  # 至少買 1 股
+                            shares = int(remaining_capital / price)
+                            if shares >= 1:
                                 actual_amount = shares * price
                                 lots = shares / lot_size
                                 total_allocated += actual_amount
@@ -339,9 +339,8 @@ class Allocator:
                 price = prices[top_ticker]
                 
                 if allow_fractional:
-                    # 使用全部資金的 10% 至少買 1 股
                     target_amount = min(capital * 0.1, capital)
-                    shares = max(target_amount / price, 1)
+                    shares = max(int(target_amount / price), 1)
                     actual_amount = shares * price
                     lots = shares / lot_size
                     
@@ -371,7 +370,6 @@ class Allocator:
                             'shares': shares,
                             'amount': actual_amount,
                         }])
-                        total_allocated = actual_amount
                         total_allocated = actual_amount
         
         # 摘要

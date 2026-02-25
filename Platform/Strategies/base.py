@@ -58,6 +58,7 @@ class Strategy(ABC):
         "rebalance_freq": "weekly",      # daily, weekly, monthly
         "top_n": 10,                      # 持有股票數
         "max_weight": 0.15,               # 單一標的最大權重
+        "equal_weight": True,            # True=等權重, False=按分數比例
         "transaction_cost": 0.001425,     # 手續費率
         "tax": 0.003,                     # 證交稅
         "slippage": 0.001,               # 滑價
@@ -137,7 +138,8 @@ class Strategy(ABC):
         """
         計算投資組合權重 (選擇性覆寫)
         
-        預設行為: 等權重分配給分數最高的 top_n 檔股票
+        equal_weight=True  → 等權重 (1/n)
+        equal_weight=False → 按分數比例分配
         
         Args:
             score: 因子分數 DataFrame
@@ -147,15 +149,23 @@ class Strategy(ABC):
         """
         top_n = self.config.get('top_n', 10)
         max_weight = self.config.get('max_weight', 0.15)
+        equal_weight = self.config.get('equal_weight', True)
         
-        # 取分數排名
         ranks = score.rank(axis=1, ascending=False)
-        
-        # 選取 top_n
         selected = ranks <= top_n
         
-        # 等權重
-        weights = selected.astype(float)
+        if equal_weight:
+            weights = selected.astype(float)
+        else:
+            masked_score = score.where(selected, 0.0)
+            row_min = masked_score.where(selected).min(axis=1)
+            row_max = masked_score.where(selected).max(axis=1)
+            row_range = (row_max - row_min).replace(0, 1)
+            
+            weights = masked_score.sub(row_min, axis=0).div(row_range, axis=0)
+            weights = weights.where(selected, 0.0)
+        
+        # 正規化使權重總和 = 1
         row_sums = weights.sum(axis=1)
         weights = weights.div(row_sums.replace(0, 1), axis=0)
         

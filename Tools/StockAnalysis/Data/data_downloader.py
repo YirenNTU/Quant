@@ -4,7 +4,6 @@ import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
 import time
-import random
 
 
 def convert_numpy_types(obj):
@@ -121,7 +120,14 @@ def download_monthly_sales(ticker_code: str, months: int = 48) -> pd.DataFrame |
     """
     try:
         end_date = datetime.now().strftime('%Y-%m-%d')
-        start_date = (datetime.now() - timedelta(days=months * 31)).strftime('%Y-%m-%d')
+        # 精確往前 N 個自然月（以當月 1 日為基準）
+        end_dt = datetime.now()
+        year, month = end_dt.year, end_dt.month
+        month -= months
+        while month <= 0:
+            month += 12
+            year -= 1
+        start_date = datetime(year, month, 1).strftime('%Y-%m-%d')
         
         data = tejapi.get(
             'TWN/APISALE',
@@ -148,6 +154,7 @@ def download_monthly_sales(ticker_code: str, months: int = 48) -> pd.DataFrame |
 def download_dividend_data(ticker_code: str, years: int = 4) -> pd.DataFrame | None:
     """
     從 TEJ API 下載股利資料 (APIDV1)
+    limit 為 years * 4 筆（約每季一筆，非日曆年數）。
     
     欄位說明:
     - divc: 現金股利
@@ -198,11 +205,12 @@ def download_dividend_data(ticker_code: str, years: int = 4) -> pd.DataFrame | N
         return None
 
 
-def download_self_announced(ticker_code: str, months: int = 48) -> pd.DataFrame | None:
+def download_self_announced(ticker_code: str, limit_records: int = 48) -> pd.DataFrame | None:
     """
     從 TEJ API 下載自結數資料 (AFESTM1)
     
-    自結數是公司自行公布的財務數據，比季報更即時
+    自結數是公司自行公布的財務數據，比季報更即時。
+    limit_records：API 回傳筆數上限（非日曆月數，依資料頻率可能為月或季）。
     
     欄位說明:
     - ip12: 營業收入
@@ -228,7 +236,7 @@ def download_self_announced(ticker_code: str, months: int = 48) -> pd.DataFrame 
         data = tejapi.get(
             'TWN/AFESTM1',
             coid=ticker_code,
-            opts={'sort': 'mdate.desc', 'limit': months}
+            opts={'sort': 'mdate.desc', 'limit': limit_records}
         )
         
         if data.empty:
@@ -377,181 +385,372 @@ def download_shareholding_structure(ticker_code: str, days: int = 1460) -> pd.Da
         return None
 
 
-def download_all_data(tickers, force_update=False):
+# ---------------------------------------------------------------------------
+# 批次下載：一次 API 請求多檔股票，再依 coid 分拆（可大幅節省 API 次數）
+# ---------------------------------------------------------------------------
+
+def _split_batch_by_coid(data: pd.DataFrame, keep_cols: list[str], drop_coid: bool = True) -> dict[str, pd.DataFrame]:
+    """將批次 API 回傳的 DataFrame 依 coid 分拆為 {code: DataFrame}。
+    輸出每檔的欄位與逐檔下載相同（不含 coid），儲存格式一致。"""
+    if data is None or data.empty or 'coid' not in data.columns:
+        return {}
+    out = {}
+    for code in data['coid'].dropna().unique():
+        sub = data[data['coid'] == code].copy()
+        out_cols = [c for c in keep_cols if c in sub.columns]
+        if drop_coid and 'coid' in out_cols:
+            out_cols = [c for c in out_cols if c != 'coid']
+        if out_cols and not sub.empty:
+            out[str(code)] = sub[out_cols].reset_index(drop=True)
+    return out
+
+
+def _batch_chunk(codes: list[str], batch_size: int = 10) -> list[list[str]]:
+    """將代碼列表依 batch_size 分組，避免單次請求過多。"""
+    if batch_size <= 0:
+        return [codes]
+    return [codes[i:i + batch_size] for i in range(0, len(codes), batch_size)]
+
+
+def download_chip_data_batch(codes: list[str], days: int = 1825, batch_size: int = 10) -> dict[str, pd.DataFrame]:
+    """批次下載籌碼資料，一次 API 請求多檔。回傳 {code: DataFrame}。"""
+    keep_cols = [
+        'coid', 'mdate', 'qfii_ex', 'fund_ex', 'tot_ex', 'dlr_ex',
+        'qfii_pct', 'fd_pct', 'dlr_pct', 'qfii_buy', 'qfii_sell',
+        'fund_buy', 'fund_sell', 'long_t', 'short_t', 's_l_pct',
+        'lmr', 'smr', 'tmr', 'borr_t1',
+    ]
+    end_date = datetime.now().strftime('%Y-%m-%d')
+    start_date = (datetime.now() - timedelta(days=days)).strftime('%Y-%m-%d')
+    result = {}
+    for chunk in _batch_chunk(codes, batch_size):
+        try:
+            data = tejapi.get(
+                'TWN/APISHRACT',
+                coid=chunk,
+                mdate={'gte': start_date, 'lte': end_date},
+                opts={'sort': 'mdate.desc'},
+                paginate=True
+            )
+            if not data.empty:
+                result.update(_split_batch_by_coid(data, keep_cols))
+        except Exception as e:
+            print(f"   ⚠️  籌碼批次下載失敗: {e}")
+    return result
+
+
+def download_monthly_sales_batch(codes: list[str], months: int = 60, batch_size: int = 10) -> dict[str, pd.DataFrame]:
+    """批次下載月營收。回傳 {code: DataFrame}。"""
+    keep_cols = ['coid', 'mdate', 'd0001', 'd0002', 'd0003', 'd0004', 'd0005', 'd0006', 'd0007']
+    end_dt = datetime.now()
+    year, month = end_dt.year, end_dt.month
+    month -= months
+    while month <= 0:
+        month += 12
+        year -= 1
+    start_date = datetime(year, month, 1).strftime('%Y-%m-%d')
+    end_date = end_dt.strftime('%Y-%m-%d')
+    result = {}
+    for chunk in _batch_chunk(codes, batch_size):
+        try:
+            data = tejapi.get(
+                'TWN/APISALE',
+                coid=chunk,
+                mdate={'gte': start_date, 'lte': end_date},
+                opts={'sort': 'mdate.desc'},
+                paginate=True
+            )
+            if not data.empty:
+                result.update(_split_batch_by_coid(data, keep_cols))
+        except Exception as e:
+            print(f"   ⚠️  月營收批次下載失敗: {e}")
+    return result
+
+
+def download_dividend_data_batch(codes: list[str], years: int = 5, batch_size: int = 10) -> dict[str, pd.DataFrame]:
+    """批次下載股利資料。回傳 {code: DataFrame}。"""
+    keep_cols = [
+        'coid', 'mdate', 'distri_type', 'distri_beg', 'distri_end',
+        'divc', 'divs', 'ern', 'cpl', 'edexdate', 'emexdate',
+        'div_date', 'd_issue2', 'dir_d', 'mt_d', 'zyy', 'int_time', 'r16a',
+        'currency', 'shortd',
+    ]
+    result = {}
+    for chunk in _batch_chunk(codes, batch_size):
+        try:
+            data = tejapi.get(
+                'TWN/APIDV1',
+                coid=chunk,
+                opts={'sort': 'mdate.desc', 'limit': years * 4},
+                paginate=True
+            )
+            if not data.empty:
+                result.update(_split_batch_by_coid(data, keep_cols))
+        except Exception as e:
+            print(f"   ⚠️  股利批次下載失敗: {e}")
+    return result
+
+
+def download_self_announced_batch(codes: list[str], limit_records: int = 60, batch_size: int = 10) -> dict[str, pd.DataFrame]:
+    """批次下載自結數。回傳 {code: DataFrame}。"""
+    keep_cols = [
+        'coid', 'mdate', 'annd', 'sem', 'ip12', 'gm', 'opi',
+        'isibt', 'isni', 'isnip', 'r306', 'r316', 'eps',
+        'r105', 'r106', 'r107', 'r108', 'r401', 'r402', 'r403', 'r404', 'r405',
+    ]
+    result = {}
+    for chunk in _batch_chunk(codes, batch_size):
+        try:
+            data = tejapi.get(
+                'TWN/AFESTM1',
+                coid=chunk,
+                opts={'sort': 'mdate.desc', 'limit': limit_records},
+                paginate=True
+            )
+            if not data.empty:
+                result.update(_split_batch_by_coid(data, keep_cols))
+        except Exception as e:
+            print(f"   ⚠️  自結數批次下載失敗: {e}")
+    return result
+
+
+def download_stock_info_batch(codes: list[str], batch_size: int = 10) -> dict[str, dict]:
+    """批次下載證券屬性。回傳 {code: dict}。"""
+    info_cols = [
+        'stk_name', 'stk_f_chi', 'enm', 'stk_eng',
+        'main_ind_c', 'main_ind_e', 'sub_ind_c', 'sub_ind_e', 'list_date',
+    ]
+    result = {}
+    for chunk in _batch_chunk(codes, batch_size):
+        try:
+            data = tejapi.get('TWN/APISTOCK', coid=chunk, opts={'limit': 100})
+            if data.empty or 'coid' not in data.columns:
+                continue
+            for code in data['coid'].dropna().unique():
+                sub = data[data['coid'] == code].iloc[0]
+                result[str(code)] = {k: sub.get(k) for k in info_cols}
+        except Exception as e:
+            print(f"   ⚠️  證券屬性批次下載失敗: {e}")
+    return result
+
+
+def download_capital_change_batch(codes: list[str], years: int = 5, batch_size: int = 10) -> dict[str, pd.DataFrame]:
+    """批次下載資本形成。回傳 {code: DataFrame}。"""
+    keep_cols = ['coid', 'mdate', 'stk_amt', 'slamt', 'cash', 'earning', 'capital', 'bonus', 'cap_dec', 'x_cap_date']
+    result = {}
+    for chunk in _batch_chunk(codes, batch_size):
+        try:
+            data = tejapi.get(
+                'TWN/APISTK1',
+                coid=chunk,
+                opts={'sort': 'mdate.desc', 'limit': years * 4},
+                paginate=True
+            )
+            if not data.empty:
+                result.update(_split_batch_by_coid(data, keep_cols))
+        except Exception as e:
+            print(f"   ⚠️  資本形成批次下載失敗: {e}")
+    return result
+
+
+def download_shareholding_structure_batch(codes: list[str], days: int = 1825, batch_size: int = 10) -> dict[str, pd.DataFrame]:
+    """批次下載集保庫存。回傳 {code: DataFrame}。"""
+    keep_cols = [
+        'coid', 'mdate', 'mkt', 'edate1', 'edate2', 'fc_s', 'pledg_s',
+        'shrm_u400', 'shrs_u400', 'shrp_u400', 'shrm_o400', 'shrs_o400', 'shrp_o400',
+        'shrm_4_6', 'shrs_4_6', 'shrp_4_6', 'shrm_6_8', 'shrs_6_8', 'shrp_6_8',
+        'shrm_8_10', 'shrs_8_10', 'shrp_8_10', 'shrm_o1000', 'shrs_o1000', 'shrp_o1000',
+    ]
+    end_date = datetime.now().strftime('%Y-%m-%d')
+    start_date = (datetime.now() - timedelta(days=days)).strftime('%Y-%m-%d')
+    result = {}
+    for chunk in _batch_chunk(codes, batch_size):
+        try:
+            data = tejapi.get(
+                'TWN/APISHRACTW',
+                coid=chunk,
+                mdate={'gte': start_date, 'lte': end_date},
+                opts={'sort': 'mdate.desc'},
+                paginate=True
+            )
+            if not data.empty:
+                result.update(_split_batch_by_coid(data, keep_cols))
+        except Exception as e:
+            print(f"   ⚠️  集保庫存批次下載失敗: {e}")
+    return result
+
+
+def _safe_to_json(df):
+    if df is None or (hasattr(df, 'empty') and df.empty):
+        return None
+    try:
+        return df.to_json(date_format='iso', orient='split')
+    except Exception:
+        return df.to_json(date_format='iso', orient='records')
+
+
+def _serialize_value(v):
+    if v is None:
+        return None
+    if hasattr(v, 'isoformat'):
+        return v.isoformat()
+    if isinstance(v, (np.bool_, bool)):
+        return bool(v)
+    if isinstance(v, (np.integer, np.int64)):
+        return int(v)
+    if isinstance(v, (np.floating, np.float64)):
+        return float(v) if not np.isnan(v) else None
+    if isinstance(v, np.ndarray):
+        return v.tolist()
+    if pd.isna(v):
+        return None
+    return v
+
+
+def _serialize_info(info_dict):
+    if not info_dict:
+        return {}
+    return {k: _serialize_value(v) for k, v in info_dict.items()}
+
+
+def download_all_data(tickers, force_update=False, use_batch=True, batch_size: int = 10):
     """
-    下載所有股票的完整資料
-    
+    下載所有股票的完整資料。
+
+    使用 use_batch=True（預設）時，籌碼/月營收/股利/自結數/證券屬性/資本形成/集保庫存
+    會以「一次 API 請求多檔」方式下載，可大幅減少 API 次數。儲存之 JSON 結構與逐檔下載完全相同。
+
     Args:
-        tickers: 股票代碼清單
+        tickers: 股票代碼清單 (例: ['2330.TW', '2317.TW'])
         force_update: 是否強制重新下載 (忽略快取)
+        use_batch: 是否以批次 API 下載共同資料（建議 True 以節省 API）
+        batch_size: 每批請求的股票數上限，預設 10 檔
     """
     print("="*60)
     print(f"🚀 TEJ 完整資料下載器 (Full Data Mode)")
-    print(f"🎯 目標: {len(tickers)} 支股票")
+    print(f"🎯 目標: {len(tickers)} 支股票 | 批次模式: {'是' if use_batch else '否'}")
     print(f"💾 儲存: {DB_DIR}")
     print("="*60)
-    
+
     success_count = 0
-    skip_count = 0
     fail_count = 0
-    
     today_str = datetime.now().strftime('%Y%m%d')
-    
-    # 預先掃描已存在的股票代碼 (只看代碼，不看日期)
+
     existing_codes = set()
     if not force_update:
         for filename in os.listdir(DB_DIR):
             if filename.endswith('.json'):
                 code_part = filename.rsplit('_', 1)[0]
                 existing_codes.add(code_part)
-    
+
+    to_update = [(t, t.split('.')[0]) for t in tickers if t.split('.')[0] not in existing_codes or force_update]
+    skip_count = len(tickers) - len(to_update)
+
     print(f"📂 快取中已有 {len(existing_codes)} 支股票資料")
+    print(f"📥 待下載: {len(to_update)} 支")
     print("💡 如需全部重新下載，請手動刪除 Database 資料夾內的檔案\n")
-    
-    for i, ticker in enumerate(tickers):
-        # 1. 檢查股票代碼是否已存在快取
-        code = ticker.split('.')[0]
-        
-        if code in existing_codes and not force_update:
-            print(f"[{i+1}/{len(tickers)}] {ticker} ✅ 快取已存在，跳過")
-            skip_count += 1
-            continue
-        
-        print(f"\n[{i+1}/{len(tickers)}] 處理 {ticker} ...")
+
+    if not to_update:
+        print("\n" + "="*60)
+        print("🏁 無需下載，作業結束")
+        print(f"✅ 成功: 0 | ⏩ 跳過: {skip_count} | ❌ 失敗: 0")
+        print("="*60)
+        return
+
+    # ---------- 批次下載：7 類資料一次請求多檔 ----------
+    chip_by_code = {}
+    monthly_sales_by_code = {}
+    dividend_by_code = {}
+    self_announced_by_code = {}
+    stock_info_by_code = {}
+    capital_by_code = {}
+    shareholding_by_code = {}
+
+    if use_batch:
+        codes = [c for _, c in to_update]
+        print("📦 批次下載 7 類資料 (籌碼/月營收/股利/自結數/證券屬性/資本形成/集保)...")
+        chip_by_code = download_chip_data_batch(codes, days=1825, batch_size=batch_size)
+        monthly_sales_by_code = download_monthly_sales_batch(codes, months=60, batch_size=batch_size)
+        dividend_by_code = download_dividend_data_batch(codes, years=5, batch_size=batch_size)
+        self_announced_by_code = download_self_announced_batch(codes, limit_records=60, batch_size=batch_size)
+        stock_info_by_code = download_stock_info_batch(codes, batch_size=batch_size)
+        capital_by_code = download_capital_change_batch(codes, years=5, batch_size=batch_size)
+        shareholding_by_code = download_shareholding_structure_batch(codes, days=1825, batch_size=batch_size)
+        print("")
+
+    n = len(to_update)
+    for i, (ticker, code) in enumerate(to_update):
+        print(f"\n[{i+1}/{n}] 處理 {ticker} ...")
         file_path = os.path.join(DB_DIR, f"{code}_{today_str}.json")
-            
+
         try:
-            # ============================================================
-            # A. 股價：抓取 4 年 (1460天)
-            # ============================================================
-            print("   📉 下載股價 (最近4年)...") 
+            # 股價、財報、基本資料：每檔仍須各呼叫一次 (tej_tool loader)
+            if not use_batch:
+                print("   📉 下載股價 (最近4年)...")
             price = loader.get_history(ticker, period_days=1460)
-            
-            if price.empty:
+            if price.empty and not use_batch:
                 print("   ⚠️ 無股價資料")
-            
-            # ============================================================
-            # B. 財報：抓最近 16 季 (4年)
-            # ============================================================
-            print("   📊 下載財報 (近16季)...")
-            fin, bs, cf = loader.get_financials(ticker, quarters=16)
-            
-            # ============================================================
-            # C. 基本資料
-            # ============================================================
-            print("   ℹ️  下載基本資料...")
+
+            if not use_batch:
+                print("   📊 下載財報 (近20季)...")
+            fin, bs, cf = loader.get_financials(ticker, quarters=20)
+
+            if not use_batch:
+                print("   ℹ️  下載基本資料...")
             info = loader.get_info(ticker)
-            
-            # ============================================================
-            # D. 籌碼資料：抓取最近 4 年 (1460天)
-            # ============================================================
-            print("   🎯 下載籌碼 (近4年)...")
-            chip = download_chip_data(code, days=1460)
-            
-            # ============================================================
-            # E. 月營收資料：抓取最近 48 個月 (4年)
-            # ============================================================
-            print("   📈 下載月營收 (近48個月)...")
-            monthly_sales = download_monthly_sales(code, months=48)
-            
-            # ============================================================
-            # F. 股利資料：抓取最近 4 年
-            # ============================================================
-            print("   💰 下載股利 (近4年)...")
-            dividend = download_dividend_data(code, years=4)
-            
-            # ============================================================
-            # G. 自結數：抓取最近 48 個月 (4年)
-            # ============================================================
-            print("   📋 下載自結數 (近48個月)...")
-            self_announced = download_self_announced(code, months=48)
-            
-            # ============================================================
-            # H. 證券屬性
-            # ============================================================
-            print("   🏢 下載證券屬性...")
-            stock_info = download_stock_info(code)
-            
-            # ============================================================
-            # I. 資本形成：抓取最近 4 年
-            # ============================================================
-            print("   📑 下載資本形成 (近4年)...")
-            capital = download_capital_change(code, years=4)
-            
-            # ============================================================
-            # J. 集保庫存：抓取最近 4 年 (1460天)
-            # ============================================================
-            print("   📊 下載集保庫存 (近4年)...")
-            shareholding = download_shareholding_structure(code, days=1460)
-            
-            # ============================================================
-            # 整合並儲存
-            # ============================================================
-            def safe_to_json(df):
-                if df is None or (hasattr(df, 'empty') and df.empty):
-                    return None
-                try:
-                    return df.to_json(date_format='iso', orient='split')
-                except Exception:
-                    return df.to_json(date_format='iso', orient='records')
-            
-            def serialize_value(v):
-                """將單一值轉換為可 JSON 序列化的格式"""
-                if v is None:
-                    return None
-                if hasattr(v, 'isoformat'):
-                    return v.isoformat()
-                if isinstance(v, (np.integer, np.int64)):
-                    return int(v)
-                if isinstance(v, (np.floating, np.float64)):
-                    return float(v) if not np.isnan(v) else None
-                if isinstance(v, np.ndarray):
-                    return v.tolist()
-                if pd.isna(v):
-                    return None
-                return v
-            
-            def serialize_info(info_dict):
-                """將 info 字典中的值轉換為可序列化格式"""
-                if not info_dict:
-                    return {}
-                return {k: serialize_value(v) for k, v in info_dict.items()}
-            
+
+            if use_batch:
+                chip = chip_by_code.get(code)
+                monthly_sales = monthly_sales_by_code.get(code)
+                dividend = dividend_by_code.get(code)
+                self_announced = self_announced_by_code.get(code)
+                stock_info = stock_info_by_code.get(code)
+                capital = capital_by_code.get(code)
+                shareholding = shareholding_by_code.get(code)
+            else:
+                print("   🎯 下載籌碼 (近5年)...")
+                chip = download_chip_data(code, days=1825)
+                print("   📈 下載月營收 (近60個月)...")
+                monthly_sales = download_monthly_sales(code, months=60)
+                print("   💰 下載股利 (近5年)...")
+                dividend = download_dividend_data(code, years=5)
+                print("   📋 下載自結數 (近60筆)...")
+                self_announced = download_self_announced(code, limit_records=60)
+                print("   🏢 下載證券屬性...")
+                stock_info = download_stock_info(code)
+                print("   📑 下載資本形成 (近5年)...")
+                capital = download_capital_change(code, years=5)
+                print("   📊 下載集保庫存 (近5年)...")
+                shareholding = download_shareholding_structure(code, days=1825)
+
             data_package = {
                 "ticker": ticker,
-                "info": serialize_info(info),
-                "stock_info": serialize_info(stock_info),        # 🆕 證券屬性
-                "price": safe_to_json(price),
-                "financials": safe_to_json(fin),
-                "balance_sheet": safe_to_json(bs),
-                "cashflow": safe_to_json(cf),
-                "chip": safe_to_json(chip),
-                "monthly_sales": safe_to_json(monthly_sales),
-                "dividend": safe_to_json(dividend),               # 🆕 股利資料
-                "self_announced": safe_to_json(self_announced),   # 🆕 自結數
-                "capital": safe_to_json(capital),                 # 🆕 資本形成
-                "shareholding": safe_to_json(shareholding),       # 🆕 集保庫存
+                "info": _serialize_info(info),
+                "stock_info": _serialize_info(stock_info),
+                "price": _safe_to_json(price),
+                "financials": _safe_to_json(fin),
+                "balance_sheet": _safe_to_json(bs),
+                "cashflow": _safe_to_json(cf),
+                "chip": _safe_to_json(chip),
+                "monthly_sales": _safe_to_json(monthly_sales),
+                "dividend": _safe_to_json(dividend),
+                "self_announced": _safe_to_json(self_announced),
+                "capital": _safe_to_json(capital),
+                "shareholding": _safe_to_json(shareholding),
                 "updated_at": datetime.now().isoformat()
             }
-            
-            # 轉換所有 numpy 型別為 Python 原生型別
             data_package_clean = convert_numpy_types(data_package)
-            
             with open(file_path, 'w', encoding='utf-8') as f:
                 json.dump(data_package_clean, f, ensure_ascii=False, indent=2)
-                
             print(f"   💾 已儲存至 {code}_{today_str}.json")
             success_count += 1
-            
-            # API 禮貌延遲
             time.sleep(0.1)
-            
         except Exception as e:
             print(f"   ❌ 下載失敗: {e}")
             fail_count += 1
 
     print("\n" + "="*60)
-    print(f"🏁 下載作業結束")
+    print("🏁 下載作業結束")
     print(f"✅ 成功: {success_count}")
     print(f"⏩ 跳過: {skip_count}")
     print(f"❌ 失敗: {fail_count}")
@@ -590,7 +789,7 @@ def test_single_download(ticker='2330.TW'):
         print("   ❌ 失敗")
     
     print("\n4. 自結數 (AFESTM1):")
-    self_ann = download_self_announced(code, months=6)
+    self_ann = download_self_announced(code, limit_records=6)
     if self_ann is not None:
         print(f"   ✅ 成功! {len(self_ann)} 筆, 欄位: {list(self_ann.columns)}")
         print(f"   範例: {self_ann.iloc[0].to_dict()}")

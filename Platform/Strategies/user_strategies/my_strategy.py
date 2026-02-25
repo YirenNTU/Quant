@@ -357,13 +357,94 @@ class MyStrategy(Strategy):
         # =========================================================
         # 9) 急跌保護：20日跌幅 < -15% → 直接 0（砍尖刺 DD）
         # =========================================================
-        crash = ts_pct_change(close, 20) < -0.50
-        total = if_else(crash, 0, total)
+        crash = ts_pct_change(close, 20) < -0.30
+        total = if_else(crash, 0.5 * total, total)
 
         # =========================================================
         # 10) 降換手：對分數做 EMA 平滑（不加參數，用 5 天）
         # =========================================================
         total = decay_exp(total, 20)
+        # =========================================================
+        # A) 先把你原本的策略結果命名成 bull_total
+        #    （也就是你目前算好的 total）
+        # =========================================================
+        bull_total = total
+
+        # =========================================================
+        # B) 盤整偵測：ranging_prob (0~1)
+        # =========================================================
+        high = db.get("high")
+        low = db.get("low")
+
+        market = close.mean(axis=1)
+        ma200_m = market.rolling(200).mean()
+        ma200_slope = ma200_m.pct_change(20)
+
+        # MA200斜率越接近0越盤整
+        slope_flat = (abs_val(ma200_slope) < 0.001).astype(float)  # 可調：越小越嚴
+
+        # 趨勢強度 proxy：淨移動 / ATR占比（越大越趨勢）
+        atr_20 = (high - low).rolling(20).mean()
+        atr_ratio = safe_divide(atr_20, close, fill=0)
+        net_move = abs_val(ts_pct_change(close, 20))
+        trend_strength = safe_divide(net_move, atr_ratio + 0.001, fill=0)
+
+        # 趨勢強度越低越盤整（用每日截面分位數做門檻）
+        ts_th = trend_strength.quantile(0.30, axis=1).values[:, None]
+        is_ranging = (trend_strength < ts_th).astype(float)
+
+        # 波動收斂：ATR ratio < 自己60日均值
+        atr_ratio_60 = ts_mean(atr_ratio, 60)
+        vol_compress = (atr_ratio < atr_ratio_60).astype(float)
+
+        # 合成盤整機率（0~1）
+        ranging_prob = 0.40 * slope_flat + 0.40 * is_ranging.mean(axis=1) + 0.20 * vol_compress.mean(axis=1)
+        ranging_prob = ranging_prob.clip(0, 1)
+
+        # broadcast 到股票維度
+        ranging_prob_df = (close * 0).add(ranging_prob, axis=0)
+
+        # =========================================================
+        # C) 盤整策略：短期反轉（cross-sectional mean reversion）
+        #    目標：低換手、吃盤整的小反轉
+        # =========================================================
+        industry = load_sector(close, "industry")
+
+        # 5~10日跌深（越跌越買）
+        rev_5 = 1 - rank(w(ts_pct_change(close, 5)), industry)
+        rev_10 = 1 - rank(w(ts_pct_change(close, 10)), industry)
+        reversal = 0.3 * rev_5 + 0.7 * rev_10
+
+        # 布林下緣（越靠近下緣越買）
+        boll_pos = bollinger_position(close, 20, 2.0)
+        boll_score = 1 - rank(w(boll_pos), industry)
+        below_lower = (boll_pos < 0).astype(float) * 0.2
+        boll_score = rank(w(boll_score + below_lower), industry)
+
+        # 籌碼：投信買超確認（你原本已算 fund_flow/chip 也可直接沿用）
+        fund_flow = safe_divide(fund_net * 1000, shares, fill=0)
+        chip_range = rank(w(ts_sum(fund_flow, 10)), industry)
+
+        # 組合盤整分數
+        range_total = 0.50 * reversal + 0.30 * boll_score + 0.20 * chip_range
+
+        # 盤整策略也要避開「崩盤趨勢」
+        crash_fast = ts_pct_change(close, 5) < -0.15
+        crash_slow = ts_pct_change(close, 20) < -0.30
+        range_total = if_else(crash_fast | crash_slow, 0, range_total)
+
+        # 降換手（盤整策略一定要穩）
+        range_total = ts_mean(range_total, 10)
+        range_total = decay_exp(range_total, 20)
+
+        # =========================================================
+        # D) Regime Switching：混合兩策略
+        # =========================================================
+        total = (1 - ranging_prob_df) * bull_total + ranging_prob_df * range_total
+
+        # 最後再平滑一次，避免 regime 邊界抖動造成換手
+        total = ts_mean(total, 10)
+        total = decay_exp(total, 30)
 
         # =========================================================
         # 11) 最終標準化：確保分數在合理範圍內（避免異常巨大的值）
@@ -438,10 +519,10 @@ if __name__ == '__main__':
     
     result = Backtester.run(
         strategy=strategy,
-        start_date="2022-02-07",      # 開始日期 (4年回測)
+        start_date="2021-03-01",      # 開始日期 (配合 TEJ 資料範圍)
         end_date=None,                 # 結束日期 (None = 最新)
-        initial_capital=200_000,     # 初始資金
-        rebalance_freq="monthly",       # 調倉頻率: daily, weekly, monthly
+        initial_capital=100_000,     # 初始資金
+        rebalance_freq="weekly",       # 調倉頻率: daily, weekly, monthly
         allow_fractional=True,         # 啟用零股交易（與 allocation 一致）
     )
     
@@ -459,7 +540,7 @@ if __name__ == '__main__':
     
     allocation = get_allocation(
         strategy=strategy,
-        capital=200_000,             # 可用資金
+        capital=100_000,             # 可用資金
         max_positions=10,              # 最大持倉數 (與 top_n 一致)
         allow_fractional=True,         # 啟用零股交易（高價股 1 張可能超過分配金額）
     )

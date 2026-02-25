@@ -15,6 +15,7 @@
 >>>     strategy=MomentumStrategy(),
 >>>     start_date="2024-01-01",
 >>>     end_date="2025-12-31",
+>>>     allocation_mode="equal_weight",   # 等權重 或 "score_weight" 依分數權重
 >>> )
 >>> print(result.summary())
 
@@ -246,14 +247,15 @@ class Backtester:
         allow_fractional: bool = True,
         benchmark: str = None,
         db = None,
+        allocation_mode: str = "equal_weight",
     ) -> BacktestResult:
         """
         執行回測
         
         Args:
             strategy: 策略實例
-            start_date: 開始日期 (預設: 資料最早日期)
-            end_date: 結束日期 (預設: 資料最新日期)
+            start_date: 開始日期 "YYYY-MM-DD" (預設: 資料最早日期)
+            end_date: 結束日期 "YYYY-MM-DD" (預設: 資料最新日期)
             initial_capital: 初始資金
             rebalance_freq: 調倉頻率 (daily, weekly, monthly)
             transaction_cost: 手續費率
@@ -262,6 +264,9 @@ class Backtester:
             allow_fractional: 是否允許零股交易 (預設 True)
             benchmark: 基準指數代碼 (可選)
             db: FieldDB 實例 (可選，不傳會自動載入)
+            allocation_mode: 權重分配方式
+                - "equal_weight": 等權重 (選中標的均分)
+                - "score_weight": 依策略分數比例分配
         
         Returns:
             BacktestResult: 回測結果
@@ -279,16 +284,32 @@ class Backtester:
         # 取得價格資料
         close = db.get('close')
         
-        # 設定日期範圍
-        if start_date is None:
-            start_date = str(close.index.min())[:10]
-        if end_date is None:
-            end_date = str(close.index.max())[:10]
+        # 正規化日期為 "YYYY-MM-DD"，並限制在資料範圍內
+        def _norm_date(d, default_ts):
+            if d is None:
+                ts = default_ts
+            else:
+                ts = pd.Timestamp(d)
+            return ts.strftime('%Y-%m-%d')
+        
+        data_start = close.index.min()
+        data_end = close.index.max()
+        start_date = _norm_date(start_date, data_start)
+        end_date = _norm_date(end_date, data_end)
+        # 確保不超出資料範圍
+        start_date = max(start_date, _norm_date(data_start, data_start))
+        end_date = min(end_date, _norm_date(data_end, data_end))
+        if start_date > end_date:
+            start_date, end_date = _norm_date(data_start, data_start), _norm_date(data_end, data_end)
+        
+        # 回測時權重分配：覆寫策略的 equal_weight 設定 (若策略支援 config)
+        if hasattr(strategy, 'config') and allocation_mode in ("equal_weight", "score_weight"):
+            strategy.config["equal_weight"] = allocation_mode == "equal_weight"
         
         # 執行策略
         weights = strategy.run(db, start_date, end_date)
         
-        # 過濾日期
+        # 過濾日期（依正規化後的 start_date / end_date）
         close = close[(close.index >= start_date) & (close.index <= end_date)]
         weights = weights[(weights.index >= start_date) & (weights.index <= end_date)]
         
@@ -298,19 +319,19 @@ class Backtester:
         close = close.loc[common_dates, common_cols]
         weights = weights.loc[common_dates, common_cols]
         
-        # 計算每日報酬
-        daily_returns = close.pct_change()
-        
         # 決定調倉日
         rebalance_dates = Backtester._get_rebalance_dates(
             weights.index, rebalance_freq
         )
+        # 首日視為初始調倉日，次日建倉，避免回測前段無部位
+        first_date = weights.index.min()
+        if first_date is not None:
+            rebalance_dates = rebalance_dates | {first_date}
         
-        # 模擬交易
+        # 模擬交易（淨值由持倉×市價+現金逐日計算，無前視偏差）
         portfolio_value, positions, trades_list = Backtester._simulate(
             weights=weights,
             close=close,
-            daily_returns=daily_returns,
             rebalance_dates=rebalance_dates,
             initial_capital=initial_capital,
             transaction_cost=transaction_cost,
@@ -319,7 +340,7 @@ class Backtester:
             allow_fractional=allow_fractional,
         )
         
-        # 計算績效指標
+        # 組合日報酬 = 淨值日變動率（用於夏普、回撤等指標）
         portfolio_returns = portfolio_value.pct_change().dropna()
         metrics = Backtester._calculate_metrics(
             portfolio_value=portfolio_value,
@@ -350,15 +371,17 @@ class Backtester:
     
     @staticmethod
     def _get_rebalance_dates(dates: pd.DatetimeIndex, freq: str) -> set:
-        """取得調倉日期"""
+        """取得調倉日期（均為實際交易日，避免休市日）"""
         if freq == "daily":
             return set(dates)
         elif freq == "weekly":
-            # 每週五調倉
-            return set(dates[dates.dayofweek == 4])
+            # 每週最後一個交易日調倉（若週五休市則為前一營業日）
+            last_per_week = dates.to_series().groupby(dates.to_period('W')).last()
+            return set(last_per_week.values)
         elif freq == "monthly":
             # 每月最後一個交易日
-            return set(dates.to_series().groupby(dates.to_period('M')).last())
+            last_per_month = dates.to_series().groupby(dates.to_period('M')).last()
+            return set(last_per_month.values)
         else:
             return set(dates)
     
@@ -366,7 +389,6 @@ class Backtester:
     def _simulate(
         weights: pd.DataFrame,
         close: pd.DataFrame,
-        daily_returns: pd.DataFrame,
         rebalance_dates: set,
         initial_capital: float,
         transaction_cost: float,
@@ -374,103 +396,100 @@ class Backtester:
         slippage: float,
         allow_fractional: bool = True,
     ) -> tuple:
-        """模擬交易"""
-        
+        """
+        模擬交易：調倉日 T 產生訊號，隔日 T+1 以收盤價成交（避免前視偏差）。
+        淨值每日 = 現金 + 持倉市值；組合報酬由淨值 pct_change() 計算。
+        調倉時先執行賣出再買入，確保賣出所得可用於買入。
+        """
         dates = weights.index
         tickers = weights.columns
         
-        # 初始化
         cash = initial_capital
-        holdings = pd.Series(0.0, index=tickers)  # 持股數量
+        holdings = pd.Series(0.0, index=tickers)
         portfolio_values = []
         positions_list = []
         trades = []
-        
-        current_weights = pd.Series(0.0, index=tickers)
+        pending_weights = None
         
         for date in dates:
             price = close.loc[date]
-            target_weights = weights.loc[date].fillna(0)
             
-            # 計算當前持倉價值
-            holdings_value = (holdings * price).fillna(0)
-            total_value = cash + holdings_value.sum()
-            
-            # 是否調倉日
-            if date in rebalance_dates:
-                # 目標持倉
-                target_value = target_weights * total_value
-                target_shares = (target_value / price).fillna(0)
+            # 執行前一個調倉日的目標：T+1 以當日收盤價成交
+            if pending_weights is not None:
+                holdings_value = (holdings * price).fillna(0)
+                total_value = cash + holdings_value.sum()
                 
-                # 如果不允許零股，則取整到整張 (1000股)
-                if not allow_fractional:
-                    # 整張交易: 取整到1000股
+                target_value = pending_weights * total_value
+                target_shares = (target_value / price).fillna(0)
+                if allow_fractional:
+                    target_shares = target_shares.apply(np.floor)
+                else:
                     target_shares = (target_shares / 1000).apply(np.floor) * 1000
                 
-                # 計算交易
                 trade_shares = target_shares - holdings
                 
-                for ticker in tickers:
-                    if abs(trade_shares[ticker]) > 0.01:
-                        shares = trade_shares[ticker]
-                        p = price[ticker]
-                        
-                        if pd.isna(p) or p <= 0:
-                            continue
-                        
-                        # 買入
-                        if shares > 0:
-                            cost = shares * p * (1 + slippage)
-                            fee = cost * transaction_cost
-                            total_cost = cost + fee
-                            
-                            if total_cost <= cash:
-                                cash -= total_cost
-                                holdings[ticker] += shares
-                                
-                                trades.append({
-                                    'date': date,
-                                    'ticker': ticker,
-                                    'action': 'BUY',
-                                    'shares': shares,
-                                    'price': p,
-                                    'value': cost,
-                                    'cost': fee,
-                                })
-                        
-                        # 賣出
-                        elif shares < 0:
-                            sell_shares = min(abs(shares), holdings[ticker])
-                            if sell_shares > 0:
-                                proceeds = sell_shares * p * (1 - slippage)
-                                fee = proceeds * transaction_cost
-                                tax_cost = proceeds * tax
-                                net_proceeds = proceeds - fee - tax_cost
-                                
-                                cash += net_proceeds
-                                holdings[ticker] -= sell_shares
-                                
-                                trades.append({
-                                    'date': date,
-                                    'ticker': ticker,
-                                    'action': 'SELL',
-                                    'shares': -sell_shares,
-                                    'price': p,
-                                    'value': proceeds,
-                                    'cost': fee + tax_cost,
-                                })
+                # 先賣後買，讓賣出所得參與買入
+                sell_tickers = [t for t in tickers if trade_shares[t] < -0.01]
+                buy_tickers = [t for t in tickers if trade_shares[t] > 0.01]
+                
+                for ticker in sell_tickers:
+                    shares = trade_shares[ticker]
+                    p = price[ticker]
+                    if pd.isna(p) or p <= 0:
+                        continue
+                    sell_shares = min(abs(shares), holdings[ticker])
+                    if sell_shares > 0:
+                        proceeds = sell_shares * p * (1 - slippage)
+                        fee = proceeds * transaction_cost
+                        tax_cost = proceeds * tax
+                        cash += proceeds - fee - tax_cost
+                        holdings[ticker] -= sell_shares
+                        trades.append({
+                            'date': date, 'ticker': ticker, 'action': 'SELL',
+                            'shares': -sell_shares, 'price': p, 'value': proceeds,
+                            'cost': fee + tax_cost,
+                        })
+                
+                for ticker in buy_tickers:
+                    shares = trade_shares[ticker]
+                    p = price[ticker]
+                    if pd.isna(p) or p <= 0:
+                        continue
+                    cost = shares * p * (1 + slippage)
+                    fee = cost * transaction_cost
+                    total_cost = cost + fee
+                    if total_cost <= cash:
+                        cash -= total_cost
+                        holdings[ticker] += shares
+                        trades.append({
+                            'date': date, 'ticker': ticker, 'action': 'BUY',
+                            'shares': shares, 'price': p, 'value': cost, 'cost': fee,
+                        })
+                
+                pending_weights = None
             
-            # 更新持倉價值
+            if date in rebalance_dates:
+                pending_weights = weights.loc[date].fillna(0)
+            
             holdings_value = (holdings * price).fillna(0)
             total_value = cash + holdings_value.sum()
-            
             portfolio_values.append(total_value)
             positions_list.append(holdings.copy())
         
         portfolio_value = pd.Series(portfolio_values, index=dates)
         positions = pd.DataFrame(positions_list, index=dates)
-        
         return portfolio_value, positions, trades
+    
+    @staticmethod
+    def _empty_metrics() -> Dict[str, float]:
+        """無有效資料時的預設指標（避免除零或空序列）"""
+        return {
+            'final_value': 0.0, 'total_return': 0.0, 'annual_return': 0.0,
+            'annual_volatility': 0.0, 'sharpe_ratio': 0.0, 'sortino_ratio': 0.0,
+            'calmar_ratio': 0.0, 'max_drawdown': 0.0, 'max_drawdown_days': 0.0,
+            'win_rate': 0.0, 'profit_loss_ratio': 0.0, 'total_trades': 0.0,
+            'annual_turnover': 0.0, 'avg_positions': 0.0,
+        }
     
     @staticmethod
     def _calculate_metrics(
@@ -480,64 +499,59 @@ class Backtester:
         weights: pd.DataFrame,
         trades: list,
     ) -> Dict[str, float]:
-        """計算績效指標"""
+        """
+        計算績效指標。
+        總報酬 = (最終淨值/初始資金) - 1；年化報酬 = (1+總報酬)^(252/交易日數) - 1 (CAGR)。
+        日報酬為 portfolio_value.pct_change()，與淨值計算一致。
+        """
+        if len(portfolio_value) == 0 or initial_capital <= 0:
+            return Backtester._empty_metrics()
         
-        # 基本指標
-        final_value = portfolio_value.iloc[-1]
+        final_value = float(portfolio_value.iloc[-1])
         total_return = final_value / initial_capital - 1
         
-        # 年化
         n_days = len(portfolio_value)
-        n_years = n_days / 252
-        annual_return = (1 + total_return) ** (1 / n_years) - 1 if n_years > 0 else 0
+        n_years = n_days / 252.0
+        annual_return = (1.0 + total_return) ** (1.0 / n_years) - 1.0 if n_years > 0 else 0.0
         
-        # 波動率
-        daily_std = portfolio_returns.std()
+        if len(portfolio_returns) == 0:
+            daily_std = 0.0
+        else:
+            daily_std = float(portfolio_returns.std())
         annual_volatility = daily_std * np.sqrt(252)
         
-        # 夏普比率 (假設無風險利率 2%)
         risk_free_rate = 0.02
         excess_return = annual_return - risk_free_rate
-        sharpe_ratio = excess_return / annual_volatility if annual_volatility > 0 else 0
+        sharpe_ratio = excess_return / annual_volatility if annual_volatility > 0 else 0.0
         
-        # 索提諾比率
         downside_returns = portfolio_returns[portfolio_returns < 0]
-        downside_std = downside_returns.std() * np.sqrt(252) if len(downside_returns) > 0 else 0
-        sortino_ratio = excess_return / downside_std if downside_std > 0 else 0
+        downside_std = float(downside_returns.std() * np.sqrt(252)) if len(downside_returns) > 0 else 0.0
+        sortino_ratio = excess_return / downside_std if downside_std > 0 else 0.0
         
-        # 最大回撤
         cummax = portfolio_value.cummax()
         drawdown = portfolio_value / cummax - 1
-        max_drawdown = drawdown.min()
+        max_drawdown = float(drawdown.min())
         
-        # 最長回撤天數
         is_dd = portfolio_value < cummax
         dd_groups = (is_dd != is_dd.shift()).cumsum()
         dd_lengths = is_dd.groupby(dd_groups).sum()
-        max_drawdown_days = dd_lengths.max() if len(dd_lengths) > 0 else 0
+        max_drawdown_days = float(dd_lengths.max()) if len(dd_lengths) > 0 else 0.0
         
-        # Calmar 比率
-        calmar_ratio = annual_return / abs(max_drawdown) if max_drawdown < 0 else 0
+        calmar_ratio = annual_return / abs(max_drawdown) if max_drawdown < 0 else 0.0
         
-        # 勝率
-        winning_days = (portfolio_returns > 0).sum()
         total_days = len(portfolio_returns)
-        win_rate = winning_days / total_days if total_days > 0 else 0
+        winning_days = (portfolio_returns > 0).sum()
+        win_rate = winning_days / total_days if total_days > 0 else 0.0
         
-        # 盈虧比
-        avg_win = portfolio_returns[portfolio_returns > 0].mean() if winning_days > 0 else 0
-        avg_loss = abs(portfolio_returns[portfolio_returns < 0].mean()) if (total_days - winning_days) > 0 else 1
-        profit_loss_ratio = avg_win / avg_loss if avg_loss > 0 else 0
+        avg_win = float(portfolio_returns[portfolio_returns > 0].mean()) if winning_days > 0 else 0.0
+        losing_days = total_days - winning_days
+        avg_loss = float(abs(portfolio_returns[portfolio_returns < 0].mean())) if losing_days > 0 else 1.0
+        profit_loss_ratio = avg_win / avg_loss if avg_loss > 0 else 0.0
         
-        # 交易統計
         total_trades = len(trades)
-        
-        # 週轉率
         weight_changes = weights.diff().abs().sum(axis=1).sum()
-        annual_turnover = weight_changes / n_years if n_years > 0 else 0
-        
-        # 平均持倉數
-        avg_positions = (weights > 0).sum(axis=1).mean()
+        annual_turnover = float(weight_changes / n_years) if n_years > 0 else 0.0
+        avg_positions = float((weights > 0).sum(axis=1).mean())
         
         return {
             'final_value': final_value,
@@ -601,6 +615,7 @@ if __name__ == '__main__':
         end_date="2025-12-31",
         initial_capital=1_000_000,
         rebalance_freq="weekly",
+        allocation_mode="equal_weight",  # 或 "score_weight"
     )
     
     print(result.summary())
